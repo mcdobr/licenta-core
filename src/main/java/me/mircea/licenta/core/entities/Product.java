@@ -1,5 +1,6 @@
 package me.mircea.licenta.core.entities;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.*;
@@ -15,7 +16,13 @@ public class Product {
 	@ElementCollection
 	private List<String> authors;
 	
-	public Product() {}
+	@OneToMany
+	private List<PricePoint> pricepoints;
+
+	public Product() {
+		this.authors = new ArrayList<>();
+		this.pricepoints = new ArrayList<>();
+	}
 
 	public Product(Integer id, String title, String description, List<String> authors) {
 		super();
@@ -23,8 +30,9 @@ public class Product {
 		this.title = title;
 		this.description = description;
 		this.authors = authors;
+		this.pricepoints = new ArrayList<>();
 	}
-
+	
 	public Integer getId() {
 		return id;
 	}
@@ -55,5 +63,14 @@ public class Product {
 
 	public void setAuthors(List<String> authors) {
 		this.authors = authors;
+	}
+	
+	public List<PricePoint> getPricepoints() {
+		return pricepoints;
+	}
+
+	public Product addPricePoint(PricePoint price) {
+		pricepoints.add(price);
+		return this;
 	}
 }

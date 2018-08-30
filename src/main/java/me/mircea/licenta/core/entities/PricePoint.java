@@ -1,6 +1,8 @@
 package me.mircea.licenta.core.entities;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Currency;
 
 import javax.persistence.*;
 
@@ -10,8 +12,8 @@ public class PricePoint {
 	@Id
 	private Integer id;
 
-	private Double nominalValue;
-	private Character currency;
+	private BigDecimal nominalValue;
+	private Currency currency;
 	private Instant retrievedTime;
 
 	@ManyToOne
@@ -19,7 +21,7 @@ public class PricePoint {
 	
 	public PricePoint() {}
 
-	public PricePoint(Integer id, Double nominalValue, Character currency, Instant retrievedTime, Site site) {
+	public PricePoint(Integer id, BigDecimal nominalValue, Currency currency, Instant retrievedTime, Site site) {
 		super();
 		this.id = id;
 		this.nominalValue = nominalValue;
@@ -36,19 +38,19 @@ public class PricePoint {
 		this.id = id;
 	}
 
-	public Double getNominalValue() {
+	public BigDecimal getNominalValue() {
 		return nominalValue;
 	}
 
-	public void setNominalValue(Double nominalValue) {
+	public void setNominalValue(BigDecimal nominalValue) {
 		this.nominalValue = nominalValue;
 	}
 
-	public Character getCurrency() {
+	public Currency getCurrency() {
 		return currency;
 	}
 
-	public void setCurrency(Character currency) {
+	public void setCurrency(Currency currency) {
 		this.currency = currency;
 	}
 
