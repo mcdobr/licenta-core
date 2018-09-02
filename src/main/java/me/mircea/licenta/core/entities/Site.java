@@ -6,6 +6,7 @@ import javax.persistence.*;
 @Table(name = "sites")
 public class Site {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	private String name;
 	private String url;
@@ -42,5 +43,4 @@ public class Site {
 	public void setUrl(String url) {
 		this.url = url;
 	}
-
 }

@@ -10,6 +10,7 @@ import javax.persistence.*;
 @Table(name = "pricepoints")
 public class PricePoint {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
 	private BigDecimal nominalValue;

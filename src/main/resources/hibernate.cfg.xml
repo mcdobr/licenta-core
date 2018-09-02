@@ -9,13 +9,12 @@
 		</property>
 
 		<property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
-
-		<!-- Assume test is the database name -->
 		<property name="hibernate.connection.url">jdbc:mysql://localhost:3306/bookr</property>
 		<property name="hibernate.connection.username">root</property>
 		<property name="hibernate.connection.password">ocupare</property>
 		<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
 		<property name="show_sql">true</property>
+		<property name="hibernate.connection.pool_size">20</property>
 		<property name="hibernate.hbm2ddl.auto">create</property>
 		<!-- List of XML mapping files -->
 		<mapping class="me.mircea.licenta.core.entities.Page" />

@@ -6,6 +6,7 @@ import javax.persistence.*;
 @Table(name="webwrappers")
 public class WebWrapper {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	private String titleSelector;
 	private String priceSelector;

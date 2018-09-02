@@ -9,6 +9,7 @@ import javax.persistence.*;
 @Table(name = "products")
 public class Product {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	private String title;
 	private String description;
@@ -69,8 +70,7 @@ public class Product {
 		return pricepoints;
 	}
 
-	public Product addPricePoint(PricePoint price) {
-		pricepoints.add(price);
-		return this;
+	public void setPricepoints(List<PricePoint> pricepoints) {
+		this.pricepoints = pricepoints;
 	}
 }

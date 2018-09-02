@@ -8,6 +8,7 @@ import javax.persistence.*;
 @Table(name = "pages")
 public class Page {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	
 	private String url;
