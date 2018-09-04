@@ -19,8 +19,9 @@ public class PricePoint {
 
 	@ManyToOne
 	private Site site;
-	
-	public PricePoint() {}
+
+	public PricePoint() {
+	}
 
 	public PricePoint(Integer id, BigDecimal nominalValue, Currency currency, Instant retrievedTime, Site site) {
 		super();

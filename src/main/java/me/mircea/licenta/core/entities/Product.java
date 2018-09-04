@@ -13,10 +13,10 @@ public class Product {
 	private Integer id;
 	private String title;
 	private String description;
-	
+
 	@ElementCollection
 	private List<String> authors;
-	
+
 	@OneToMany
 	private List<PricePoint> pricepoints;
 
@@ -33,7 +33,7 @@ public class Product {
 		this.authors = authors;
 		this.pricepoints = new ArrayList<>();
 	}
-	
+
 	public Integer getId() {
 		return id;
 	}
@@ -65,7 +65,7 @@ public class Product {
 	public void setAuthors(List<String> authors) {
 		this.authors = authors;
 	}
-	
+
 	public List<PricePoint> getPricepoints() {
 		return pricepoints;
 	}

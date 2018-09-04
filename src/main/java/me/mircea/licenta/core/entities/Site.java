@@ -2,6 +2,10 @@ package me.mircea.licenta.core.entities;
 
 import javax.persistence.*;
 
+import org.hibernate.Session;
+
+import me.mircea.licenta.core.utils.HibernateUtil;
+
 @Entity
 @Table(name = "sites")
 public class Site {
@@ -10,8 +14,17 @@ public class Site {
 	private Integer id;
 	private String name;
 	private String url;
+
+	public Site() {
+	}
 	
-	public Site() {}
+	public static void main(String[] args) {
+		Session session = HibernateUtil.getSessionFactory().openSession();
+		session.beginTransaction();
+
+		session.getTransaction().commit();
+		session.close();
+	}
 
 	public Site(Integer id, String name, String url) {
 		super();

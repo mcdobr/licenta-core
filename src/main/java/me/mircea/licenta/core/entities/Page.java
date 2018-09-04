@@ -10,19 +10,20 @@ public class Page {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	
+
 	private String url;
 	private Integer type;
 	private Instant discoveredTime;
 	private Instant retrievedTime;
-	
+
 	@ManyToOne
 	private Site site;
-	
+
 	@OneToOne
 	private Product product;
-	
-	public Page() {}
+
+	public Page() {
+	}
 
 	public Page(Integer id, String url, Integer type, Instant discoveredTime, Instant retrievedTime, Site site,
 			Product product) {

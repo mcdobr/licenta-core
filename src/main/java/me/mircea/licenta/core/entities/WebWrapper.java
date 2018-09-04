@@ -3,7 +3,7 @@ package me.mircea.licenta.core.entities;
 import javax.persistence.*;
 
 @Entity
-@Table(name="webwrappers")
+@Table(name = "webwrappers")
 public class WebWrapper {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,7 +15,8 @@ public class WebWrapper {
 	private String imageLinkSelector;
 	private String paginationLinkSelector;
 
-	public WebWrapper() {}
+	public WebWrapper() {
+	}
 
 	public WebWrapper(Integer id, String titleSelector, String priceSelector, String authorsSelector,
 			String descriptionSelector, String imageLinkSelector, String paginationLinkSelector) {
