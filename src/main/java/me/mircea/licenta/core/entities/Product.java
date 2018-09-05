@@ -17,7 +17,7 @@ public class Product {
 	@ElementCollection
 	private List<String> authors;
 
-	@OneToMany
+	@OneToMany(cascade = CascadeType.ALL)
 	private List<PricePoint> pricepoints;
 
 	public Product() {
