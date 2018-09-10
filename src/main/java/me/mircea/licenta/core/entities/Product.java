@@ -11,11 +11,17 @@ public class Product {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+
+	@Column(nullable = false)
 	private String title;
-	private String description;
 
 	@ElementCollection
 	private List<String> authors;
+
+	@Column(unique = true)
+	private String isbn;
+
+	private String description;
 
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<PricePoint> pricepoints;
@@ -50,20 +56,28 @@ public class Product {
 		this.title = title;
 	}
 
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
 	public List<String> getAuthors() {
 		return authors;
 	}
 
 	public void setAuthors(List<String> authors) {
 		this.authors = authors;
+	}
+
+	public String getIsbn() {
+		return isbn;
+	}
+
+	public void setIsbn(String isbn) {
+		this.isbn = isbn;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public List<PricePoint> getPricepoints() {

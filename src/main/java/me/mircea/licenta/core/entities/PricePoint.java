@@ -1,8 +1,12 @@
 package me.mircea.licenta.core.entities;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.time.Instant;
 import java.util.Currency;
+import java.util.Locale;
 
 import javax.persistence.*;
 
@@ -70,5 +74,26 @@ public class PricePoint {
 
 	public void setSite(Site site) {
 		this.site = site;
+	}
+	
+	/**
+	 * @brief Transforms a price tag string into a PricePoint.
+	 * @param price The string representation of a price tag.
+	 * @param locale The locale considered for extracting the price tag.
+	 * @param retrievedTime2 
+	 * @return
+	 * @throws ParseException
+	 */
+	public static PricePoint valueOf(final String price, final Locale locale, Instant retrievedTime) throws ParseException {
+		final NumberFormat noFormat = NumberFormat.getNumberInstance(locale);
+		if (noFormat instanceof DecimalFormat) {
+			((DecimalFormat) noFormat).setParseBigDecimal(true);
+		}
+
+		BigDecimal nominalValue = (BigDecimal) noFormat.parse(price);
+		if (nominalValue.stripTrailingZeros().scale() <= 0 && nominalValue.compareTo(BigDecimal.valueOf(100)) >= 1)
+			nominalValue = nominalValue.divide(BigDecimal.valueOf(100));
+
+		return new PricePoint(null, nominalValue, Currency.getInstance(locale), retrievedTime, null);
 	}
 }
