@@ -35,7 +35,7 @@ public class ImmutablePair<A, B> {
 			return false;
 		if (!(obj instanceof ImmutablePair))
 			return false;
-		ImmutablePair other = (ImmutablePair) obj;
+		ImmutablePair<A, B> other = (ImmutablePair<A, B>) obj;
 		if (first == null) {
 			if (other.first != null)
 				return false;
