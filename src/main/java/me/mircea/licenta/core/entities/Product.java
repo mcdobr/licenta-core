@@ -23,6 +23,7 @@ public class Product {
 
 	private String description;
 
+	//TODO: maybe switch to set?
 	@OneToMany(cascade = CascadeType.ALL)
 	private List<PricePoint> pricepoints;
 
@@ -86,5 +87,11 @@ public class Product {
 
 	public void setPricepoints(List<PricePoint> pricepoints) {
 		this.pricepoints = pricepoints;
+	}
+
+	@Override
+	public String toString() {
+		return "Product [id=" + id + ", title=" + title + ", authors=" + authors + ", isbn=" + isbn + ", description="
+				+ description + ", pricepoints=" + pricepoints + "]";
 	}
 }
