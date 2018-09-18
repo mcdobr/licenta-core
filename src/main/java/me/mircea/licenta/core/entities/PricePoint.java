@@ -10,9 +10,11 @@ import java.util.Locale;
 
 import javax.persistence.*;
 
+import com.google.common.base.Preconditions;
+
 @Entity
 @Table(name = "pricepoints")
-public class PricePoint {
+public class PricePoint implements Comparable<PricePoint> {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
@@ -25,10 +27,13 @@ public class PricePoint {
 	private Site site;
 
 	public PricePoint() {
+		retrievedDay = LocalDate.now();
 	}
 
 	public PricePoint(Integer id, BigDecimal nominalValue, Currency currency, LocalDate retrievedDay, Site site) {
 		super();
+		Preconditions.checkNotNull(retrievedDay);
+		
 		this.id = id;
 		this.nominalValue = nominalValue;
 		this.currency = currency;
@@ -60,12 +65,12 @@ public class PricePoint {
 		this.currency = currency;
 	}
 
-	public LocalDate getRetrievedTime() {
+	public LocalDate getRetrievedDay() {
 		return retrievedDay;
 	}
 
-	public void setRetrievedTime(LocalDate retrievedTime) {
-		this.retrievedDay = retrievedTime;
+	public void setRetrievedDay(LocalDate retrievedDay) {
+		this.retrievedDay = retrievedDay;
 	}
 
 	public Site getSite() {
@@ -90,7 +95,6 @@ public class PricePoint {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((currency == null) ? 0 : currency.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((nominalValue == null) ? 0 : nominalValue.hashCode());
 		result = prime * result + ((retrievedDay == null) ? 0 : retrievedDay.hashCode());
 		result = prime * result + ((site == null) ? 0 : site.hashCode());
@@ -108,27 +112,26 @@ public class PricePoint {
 			return false;
 		if (!(obj instanceof PricePoint))
 			return false;
+		
 		PricePoint other = (PricePoint) obj;
 		if (currency == null) {
 			if (other.currency != null)
 				return false;
 		} else if (!currency.equals(other.currency))
 			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
+		
 		if (nominalValue == null) {
 			if (other.nominalValue != null)
 				return false;
 		} else if (!nominalValue.equals(other.nominalValue))
 			return false;
+		
 		if (retrievedDay == null) {
 			if (other.retrievedDay != null)
 				return false;
 		} else if (!retrievedDay.equals(other.retrievedDay))
 			return false;
+		
 		if (site == null) {
 			if (other.site != null)
 				return false;
@@ -156,5 +159,10 @@ public class PricePoint {
 			nominalValue = nominalValue.divide(BigDecimal.valueOf(100));
 
 		return new PricePoint(null, nominalValue, Currency.getInstance(locale), retrievedTime, null);
+	}
+
+	@Override
+	public int compareTo(PricePoint o) {
+		return getRetrievedDay().compareTo(o.getRetrievedDay());
 	}
 }

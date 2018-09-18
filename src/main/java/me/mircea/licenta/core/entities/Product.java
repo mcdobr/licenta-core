@@ -2,8 +2,12 @@ package me.mircea.licenta.core.entities;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.persistence.*;
+
+import com.google.common.base.Preconditions;
 
 @Entity
 @Table(name = "products")
@@ -23,22 +27,24 @@ public class Product {
 
 	private String description;
 
-	//TODO: maybe switch to set?
+	//TODO: maybe switch to SortedSet?
 	@OneToMany(cascade = CascadeType.ALL)
-	private List<PricePoint> pricepoints;
+	private Set<PricePoint> pricepoints;
 
 	public Product() {
 		this.authors = new ArrayList<>();
-		this.pricepoints = new ArrayList<>();
+		this.pricepoints = new TreeSet<>();
 	}
 
 	public Product(Integer id, String title, String description, List<String> authors) {
 		super();
+		
+		Preconditions.checkNotNull(authors);
 		this.id = id;
 		this.title = title;
 		this.description = description;
 		this.authors = authors;
-		this.pricepoints = new ArrayList<>();
+		this.pricepoints = new TreeSet<>();
 	}
 
 	public Integer getId() {
@@ -81,11 +87,11 @@ public class Product {
 		this.description = description;
 	}
 
-	public List<PricePoint> getPricepoints() {
+	public Set<PricePoint> getPricepoints() {
 		return pricepoints;
 	}
 
-	public void setPricepoints(List<PricePoint> pricepoints) {
+	public void setPricepoints(Set<PricePoint> pricepoints) {
 		this.pricepoints = pricepoints;
 	}
 
