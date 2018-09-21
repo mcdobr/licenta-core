@@ -7,6 +7,8 @@ import java.util.TreeSet;
 
 import javax.persistence.*;
 
+import org.hibernate.annotations.Type;
+
 import com.google.common.base.Preconditions;
 
 @Entity
@@ -25,6 +27,8 @@ public class Product {
 	@Column(unique = true)
 	private String isbn;
 
+	@Column
+	@Type(type = "text")
 	private String description;
 
 	//TODO: maybe switch to SortedSet?
@@ -98,6 +102,6 @@ public class Product {
 	@Override
 	public String toString() {
 		return "Product [id=" + id + ", title=" + title + ", authors=" + authors + ", isbn=" + isbn + ", description="
-				+ description + ", pricepoints=" + pricepoints + "]";
+				+ (description != null) + ", pricepoints=" + pricepoints + "]";
 	}
 }

@@ -24,6 +24,7 @@ public class HtmlUtil {
 		doc.getElementsByTag("style").remove();
 		doc.getElementsByTag("script").remove();
 		doc.getElementsByAttribute("style").removeAttr("style");
+		doc.getElementsByAttributeValueContaining("class", "carousel").remove();
 		return doc;
 	}
 }

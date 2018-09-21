@@ -16,7 +16,6 @@
 		<property name="show_sql">true</property>
 		<property name="hibernate.connection.pool_size">10</property>
 		<property name="hibernate.hbm2ddl.auto">create</property>
-<!-- 		<property name="connection.autocommit">false</property>   -->
 		
 		<!-- List of XML mapping files -->
 		<mapping class="me.mircea.licenta.core.entities.Page" />

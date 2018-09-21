@@ -1,4 +1,4 @@
-package me.mircea.licenta.core.utils;
+package me.mircea.licenta.core.productsdb;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;

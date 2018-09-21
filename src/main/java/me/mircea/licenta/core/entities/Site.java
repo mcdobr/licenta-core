@@ -1,10 +1,15 @@
 package me.mircea.licenta.core.entities;
 
+import java.net.MalformedURLException;
+
 import javax.persistence.*;
 
 import org.hibernate.Session;
 
-import me.mircea.licenta.core.utils.HibernateUtil;
+import com.google.common.base.Preconditions;
+
+import me.mircea.licenta.core.productsdb.HibernateUtil;
+import me.mircea.licenta.core.utils.HtmlUtil;
 
 @Entity
 @Table(name = "sites")
@@ -17,20 +22,20 @@ public class Site {
 
 	public Site() {
 	}
-	
-	public static void main(String[] args) {
-		Session session = HibernateUtil.getSessionFactory().openSession();
-		session.beginTransaction();
-
-		session.getTransaction().commit();
-		session.close();
-	}
 
 	public Site(Integer id, String name, String url) {
 		super();
+		
+		Preconditions.checkNotNull(name);
+		Preconditions.checkNotNull(url);
+		
 		this.id = id;
 		this.name = name;
 		this.url = url;
+	}
+	
+	public Site(String url) throws MalformedURLException {
+		this(null, HtmlUtil.getDomainOfUrl(url), url);
 	}
 
 	public Integer getId() {
@@ -57,7 +62,7 @@ public class Site {
 		this.url = url;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -72,7 +77,6 @@ public class Site {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		return result;
@@ -90,11 +94,6 @@ public class Site {
 		if (!(obj instanceof Site))
 			return false;
 		Site other = (Site) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;

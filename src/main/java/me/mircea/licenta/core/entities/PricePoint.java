@@ -40,6 +40,10 @@ public class PricePoint implements Comparable<PricePoint> {
 		this.retrievedDay = retrievedDay;
 		this.site = site;
 	}
+	
+	public PricePoint(BigDecimal nominalValue, Currency currency, LocalDate retrievedDay, Site site) {
+		this(null, nominalValue, currency, retrievedDay, site);
+	}
 
 	public Integer getId() {
 		return id;
@@ -87,7 +91,7 @@ public class PricePoint implements Comparable<PricePoint> {
 				+ retrievedDay + ", site=" + site + "]";
 	}
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
@@ -101,7 +105,7 @@ public class PricePoint implements Comparable<PricePoint> {
 		return result;
 	}
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -144,23 +148,28 @@ public class PricePoint implements Comparable<PricePoint> {
 	 * @brief Transforms a price tag string into a PricePoint.
 	 * @param price The string representation of a price tag.
 	 * @param locale The locale considered for extracting the price tag.
-	 * @param retrievedTime
-	 * @return
-	 * @throws ParseException
+	 * @param retrievedDay The day when the price was read.
+	 * @param site 
+	 * @return A pricepoint extracted from the string.
+	 * @throws ParseException if the String is not formatted according to the locale.
 	 */
-	public static PricePoint valueOf(final String price, final Locale locale, LocalDate retrievedTime) throws ParseException {
+	public static PricePoint valueOf(final String price, final Locale locale, LocalDate retrievedDay, Site site) throws ParseException {
 		final NumberFormat noFormat = NumberFormat.getNumberInstance(locale);
 		if (noFormat instanceof DecimalFormat) {
 			((DecimalFormat) noFormat).setParseBigDecimal(true);
 		}
 
 		BigDecimal nominalValue = (BigDecimal) noFormat.parse(price);
+		// If the price is like 4700 RON (actually 47.00 RON)
 		if (nominalValue.stripTrailingZeros().scale() <= 0 && nominalValue.compareTo(BigDecimal.valueOf(100)) >= 1)
 			nominalValue = nominalValue.divide(BigDecimal.valueOf(100));
 
-		return new PricePoint(null, nominalValue, Currency.getInstance(locale), retrievedTime, null);
+		return new PricePoint(null, nominalValue, Currency.getInstance(locale), retrievedDay, site);
 	}
 
+	/**
+	 * @brief Compares pricepoints by day.
+	 */
 	@Override
 	public int compareTo(PricePoint o) {
 		return getRetrievedDay().compareTo(o.getRetrievedDay());
