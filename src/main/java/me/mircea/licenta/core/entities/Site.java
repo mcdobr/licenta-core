@@ -4,11 +4,8 @@ import java.net.MalformedURLException;
 
 import javax.persistence.*;
 
-import org.hibernate.Session;
-
 import com.google.common.base.Preconditions;
 
-import me.mircea.licenta.core.productsdb.HibernateUtil;
 import me.mircea.licenta.core.utils.HtmlUtil;
 
 @Entity

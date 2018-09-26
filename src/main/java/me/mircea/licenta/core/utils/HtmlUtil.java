@@ -21,8 +21,7 @@ public class HtmlUtil {
 	}
 
 	public static Document sanitizeHtml(Document doc) {
-		doc.getElementsByTag("style").remove();
-		doc.getElementsByTag("script").remove();
+		doc.select("nav,footer,script,noscript,style").remove();
 		doc.getElementsByAttribute("style").removeAttr("style");
 		doc.getElementsByAttributeValueContaining("class", "carousel").remove();
 		return doc;

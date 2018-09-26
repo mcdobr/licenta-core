@@ -84,11 +84,20 @@ public class PricePoint implements Comparable<PricePoint> {
 	public void setSite(Site site) {
 		this.site = site;
 	}
-	
+
+	/** (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString() {
-		return "PricePoint [id=" + id + ", nominalValue=" + nominalValue + ", currency=" + currency + ", retrievedDay="
-				+ retrievedDay + ", site=" + site + "]";
+		StringBuilder builder = new StringBuilder();
+		builder.append("PricePoint [id=").append(id);
+		builder.append(", nominalValue=").append(nominalValue);
+		builder.append(", currency=").append(currency);
+		builder.append(", retrievedDay=").append(retrievedDay);
+		builder.append(", site=").append(site);
+		builder.append("]");
+		return builder.toString();
 	}
 
 	/** (non-Javadoc)
