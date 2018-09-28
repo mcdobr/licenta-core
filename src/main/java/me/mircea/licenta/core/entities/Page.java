@@ -20,13 +20,13 @@ public class Page {
 	private Site site;
 
 	@OneToOne
-	private Product product;
+	private Book book;
 
 	public Page() {
 	}
 
 	public Page(Integer id, String url, Integer type, Instant discoveredTime, Instant retrievedTime, Site site,
-			Product product) {
+			Book book) {
 		super();
 		this.id = id;
 		this.url = url;
@@ -34,7 +34,7 @@ public class Page {
 		this.discoveredTime = discoveredTime;
 		this.retrievedTime = retrievedTime;
 		this.site = site;
-		this.product = product;
+		this.book = book;
 	}
 
 	public Integer getId() {
@@ -85,11 +85,11 @@ public class Page {
 		this.site = site;
 	}
 
-	public Product getProduct() {
-		return product;
+	public Book getBook() {
+		return book;
 	}
 
-	public void setProduct(Product product) {
-		this.product = product;
+	public void setBook(Book book) {
+		this.book = book;
 	}
 }

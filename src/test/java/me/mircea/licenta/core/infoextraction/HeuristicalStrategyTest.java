@@ -14,7 +14,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Test;
 
-import me.mircea.licenta.core.entities.Product;
+import me.mircea.licenta.core.entities.Book;
 import me.mircea.licenta.core.utils.HtmlUtil;
 
 public class HeuristicalStrategyTest {
@@ -33,6 +33,7 @@ public class HeuristicalStrategyTest {
 		
 		
 		Elements productElements = extractionStrategy.extractProductHtmlElements(doc);
+		assertNotNull(productElements);
 		assertTrue(2000 <= productElements.size());
 	}
 	
@@ -41,7 +42,7 @@ public class HeuristicalStrategyTest {
 		Document doc = HtmlUtil.sanitizeHtml(
 				Jsoup.connect("https://carturesti.ro/carte/trecute-vieti-de-doamne-si-domnite-82699986?p=1995").get());
 		
-		String elementStr = "<prod-grid-box class=\"product-grid-container\" itemscope=\"\" itemtype=\"http://schema.org/Product\"><a class=\"clean-a\" data-ng-href=\"/carte/trecute-vieti-de-doamne-si-domnite-82699986?p=1\" title=\"Trecute vieti de doamne si domnite\" data-ng-click=\"onProductClick($event, product,key +1)\" href=\"/carte/trecute-vieti-de-doamne-si-domnite-82699986?p=1\">" + 
+		String elementStr = "<prod-grid-box class=\"product-grid-container\" itemscope=\"\" itemtype=\"http://schema.org/Book\"><a class=\"clean-a\" data-ng-href=\"/carte/trecute-vieti-de-doamne-si-domnite-82699986?p=1\" title=\"Trecute vieti de doamne si domnite\" data-ng-click=\"onProductClick($event, product,key +1)\" href=\"/carte/trecute-vieti-de-doamne-si-domnite-82699986?p=1\">" + 
 				"" + 
 				"    <!-- ngIf: ::product.imgUrl --><div data-ng-if=\"::product.imgUrl\" class=\"productImageContainer ng-scope\" style=\"\">" + 
 				"        <img data-ng-src=\"//cdn.cartu.ro/img/prod/240/82699986-0-240.jpeg\" itemprop=\"image\" src=\"//cdn.cartu.ro/img/prod/240/82699986-0-240.jpeg\">" + 
@@ -62,8 +63,8 @@ public class HeuristicalStrategyTest {
 		
 		Element htmlElement = Jsoup.parse(elementStr);
 		
-		Product p = extractionStrategy.extractProduct(htmlElement, doc);
-		assertNotNull(p.getIsbn());
-		assertNotEquals(p.getIsbn().trim(), "");
+		Book book = extractionStrategy.extractBook(htmlElement, doc);
+		assertNotNull(book.getIsbn());
+		assertNotEquals(book.getIsbn().trim(), "");
 	}
 }

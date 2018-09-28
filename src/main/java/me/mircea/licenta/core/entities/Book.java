@@ -12,8 +12,8 @@ import org.hibernate.annotations.Type;
 import com.google.common.base.Preconditions;
 
 @Entity
-@Table(name = "products")
-public class Product {
+@Table(name = "books")
+public class Book {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
@@ -44,12 +44,12 @@ public class Product {
 	@Type(type = "text")
 	private String coverUrl;
 
-	public Product() {
+	public Book() {
 		this.authors = new ArrayList<>();
 		this.pricepoints = new TreeSet<>();
 	}
 
-	public Product(Integer id, String title, String description, List<String> authors) {
+	public Book(Integer id, String title, String description, List<String> authors) {
 		super();
 
 		Preconditions.checkNotNull(authors);
@@ -212,7 +212,7 @@ public class Product {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("Product [id=").append(id);
+		builder.append("Book [id=").append(id);
 		builder.append(", title=").append(title);
 		builder.append(", authors=").append(authors);
 		builder.append(", isbn=").append(isbn);

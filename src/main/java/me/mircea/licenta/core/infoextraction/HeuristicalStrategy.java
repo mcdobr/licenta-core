@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import me.mircea.licenta.core.entities.PricePoint;
-import me.mircea.licenta.core.entities.Product;
+import me.mircea.licenta.core.entities.Book;
 import me.mircea.licenta.core.entities.Site;
 
 public class HeuristicalStrategy implements InformationExtractionStrategy {
@@ -38,16 +38,16 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 	}
 
 	@Override
-	public Product extractProduct(Element htmlElement, Document productPage) {
+	public Book extractBook(Element htmlElement, Document productPage) {
 		Preconditions.checkNotNull(htmlElement);
 
 		String title = htmlElement.select("[class*='titl'],[class*='nume'],[class*='name']").text();
 
-		Product product = new Product();
-		product.setTitle(title);
+		Book book = new Book();
+		book.setTitle(title);
 
 		String imageUrl = htmlElement.select("img[src]").attr("src");
-		product.setCoverUrl(imageUrl);
+		book.setCoverUrl(imageUrl);
 		
 		
 		// Extract product attributes and attach to product
@@ -65,10 +65,10 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 		
 		productAttributes.keySet().stream().filter(key -> authorWordSet.contains(key.toLowerCase()))
 			.findFirst().ifPresent(authorTag -> 
-			product.setAuthors(Arrays.asList(productAttributes.get(authorTag).split(".,&"))));
+			book.setAuthors(Arrays.asList(productAttributes.get(authorTag).split(".,&"))));
 
 		productAttributes.keySet().stream().filter(key -> key.contains("ISBN")).findFirst()
-				.ifPresent(key -> product.setIsbn(productAttributes.get(key)));
+				.ifPresent(key -> book.setIsbn(productAttributes.get(key)));
 
 		
 		Map<String, String> formats = new HashMap<>();
@@ -82,7 +82,7 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 		formats.put("necartonata", "paperback");
 		
 		productAttributes.values().stream().filter(key -> formats.containsKey(key.toLowerCase()))
-			.findFirst().ifPresent(format -> product.setFormat(format));
+			.findFirst().ifPresent(format -> book.setFormat(format));
 		
 		
 		Set<String> yearWordSet = new HashSet<>();
@@ -91,18 +91,18 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 		yearWordSet.add("year");
 		
 		productAttributes.keySet().stream().filter(key -> yearWordSet.contains(key.toLowerCase()))
-			.findFirst().ifPresent(key -> product.setReleaseYear(Integer.parseInt(productAttributes.get(key))));
+			.findFirst().ifPresent(key -> book.setReleaseYear(Integer.parseInt(productAttributes.get(key))));
 		
 		Set<String> publisherWordSet = new HashSet<>();
 		publisherWordSet.add("publisher");
 		publisherWordSet.add("editura");
 		productAttributes.keySet().stream().filter(key -> publisherWordSet.contains(key.toLowerCase()))
-			.findFirst().ifPresent(key -> product.setPublishingHouse(productAttributes.get(key)));
+			.findFirst().ifPresent(key -> book.setPublishingHouse(productAttributes.get(key)));
 		
-		product.setDescription(this.extractProductDescription(productPage));
+		book.setDescription(this.extractProductDescription(productPage));
 
 		
-		return product;
+		return book;
 	}
 
 	@Override
