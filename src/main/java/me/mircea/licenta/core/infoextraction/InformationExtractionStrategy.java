@@ -8,7 +8,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import me.mircea.licenta.core.entities.PricePoint;
-import me.mircea.licenta.core.entities.Product;
+import me.mircea.licenta.core.entities.Book;
 import me.mircea.licenta.core.entities.Site;
 
 /**
@@ -33,7 +33,11 @@ public interface InformationExtractionStrategy {
 	 * @throws NullPointerException
 	 *             if the passed document is null.
 	 */
-	public Product extractProduct(Element htmlElement, Document productPage);
+	public Book extractBook(Element htmlElement, Document productPage);
+	
+	public default Book extractBook(Element htmlElement) {
+		return extractBook(htmlElement, null);
+	}
 
 	public PricePoint extractPricePoint(Element htmlElement, Locale locale, LocalDate retrievedDay, Site site);
 
