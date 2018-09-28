@@ -40,6 +40,8 @@ public class SemanticWebStrategy implements InformationExtractionStrategy {
 			case "isbn":
 				book.setIsbn(content);
 				break;
+			default:
+				break;
 			}
 		}
 		

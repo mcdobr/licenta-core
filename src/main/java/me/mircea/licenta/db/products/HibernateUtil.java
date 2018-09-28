@@ -14,9 +14,9 @@ public class HibernateUtil {
 	private static SessionFactory buildSessionFactory() {
 		try {
 			return new Configuration().configure().buildSessionFactory();
-		} catch (Exception ex) {
-			logger.error("Could not configure Hibernate");
-			throw new ExceptionInInitializerError(ex);
+		} catch (Exception e) {
+			logger.error("Could not configure Hibernate {}", e);
+			throw new ExceptionInInitializerError(e);
 		}
 	}
 	

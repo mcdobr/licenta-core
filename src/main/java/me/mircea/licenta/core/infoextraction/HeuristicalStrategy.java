@@ -27,9 +27,9 @@ import me.mircea.licenta.core.entities.Site;
 public class HeuristicalStrategy implements InformationExtractionStrategy {
 	private static final Logger logger = LoggerFactory.getLogger(HeuristicalStrategy.class);
 	private static final Pattern isbnPattern = Pattern.compile("(?=[-\\d\\ xX]{10,})\\d+[-\\ ]?\\d+[-\\ ]?\\d+[-\\ ]?\\d*[-\\ ]?[\\dxX]");
-	private static final String imageWithLinkSelector = "[class*='produ']:has(img):has(a)";
-	private static final String PRODUCT_SELECTOR = String.format("%s:not(:has(%s))", imageWithLinkSelector,
-			imageWithLinkSelector);
+	private static final String IMAGE_WITH_LINK_SELECTOR = "[class*='produ']:has(img):has(a)";
+	private static final String PRODUCT_SELECTOR = String.format("%s:not(:has(%s))", IMAGE_WITH_LINK_SELECTOR,
+			IMAGE_WITH_LINK_SELECTOR);
 
 	@Override
 	public Elements extractProductHtmlElements(Document doc) {
