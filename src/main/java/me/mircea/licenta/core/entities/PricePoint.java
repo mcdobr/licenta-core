@@ -2,6 +2,7 @@ package me.mircea.licenta.core.entities;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.LocalDate;
@@ -154,33 +155,86 @@ public class PricePoint implements Comparable<PricePoint> {
 	}
 
 	/**
-	 * @brief Transforms a price tag string into a PricePoint.
-	 * @param price The string representation of a price tag.
-	 * @param locale The locale considered for extracting the price tag.
-	 * @param retrievedDay The day when the price was read.
-	 * @param site 
-	 * @return A pricepoint extracted from the string.
-	 * @throws ParseException if the String is not formatted according to the locale.
+	 * @brief Compares pricepoints by day.
 	 */
-	public static PricePoint valueOf(final String price, final Locale locale, LocalDate retrievedDay, Site site) throws ParseException {
+	@Override
+	public int compareTo(PricePoint o) {
+		return getRetrievedDay().compareTo(o.getRetrievedDay());
+	}
+
+	/**
+	 * @brief Transforms a price tag string into a PricePoint. If say, a romanian
+	 *        site uses the . (dot) decimal separator, this replaces all commas and
+	 *        dots to the romanian default decimal separator (which is a comma). If
+	 *        the price tag contains no decimal separator whatsoever, the last two
+	 *        digits are considered to be cents. If it has more than two digits
+	 *        after the normal decimal point, the function considers that a mistake
+	 *        on part of the document and makes it right.
+	 * @param price
+	 *            The string representation of a price tag.
+	 * @param locale
+	 *            The locale considered for extracting the price tag.
+	 * @param retrievedDay
+	 *            The day when the price was read.
+	 * @param site
+	 * @return A pricepoint extracted from the string.
+	 * @throws ParseException
+	 *             if the String is not formatted according to the locale.
+	 */
+	public static PricePoint valueOf(String price, final Locale locale, LocalDate retrievedDay, Site site) throws ParseException {
+		price = normalizeStringWithLocale(price, locale);
+		
 		final NumberFormat noFormat = NumberFormat.getNumberInstance(locale);
 		if (noFormat instanceof DecimalFormat) {
 			((DecimalFormat) noFormat).setParseBigDecimal(true);
 		}
 
 		BigDecimal nominalValue = (BigDecimal) noFormat.parse(price);
-		//TODO: Fix this: If the price is like 4700 RON (actually 47.00 RON)
-		if (nominalValue.stripTrailingZeros().scale() <= 0 && nominalValue.compareTo(BigDecimal.valueOf(100)) >= 1)
+		if (!price.matches(".*[.,].*") && nominalValue.stripTrailingZeros().scale() <= 0 && nominalValue.compareTo(BigDecimal.valueOf(100)) >= 1)
 			nominalValue = nominalValue.divide(BigDecimal.valueOf(100));
 
 		return new PricePoint(null, nominalValue, Currency.getInstance(locale), retrievedDay, site);
 	}
 
 	/**
-	 * @brief Compares pricepoints by day.
+	 * Does the actual fixing of the price tag.
+	 * @param price
+	 * @param locale
+	 * @return
 	 */
-	@Override
-	public int compareTo(PricePoint o) {
-		return getRetrievedDay().compareTo(o.getRetrievedDay());
+	private static String normalizeStringWithLocale(String price, Locale locale) {
+		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+		String normalDecimalSeparator = String.valueOf(symbols.getDecimalSeparator());
+		String normalGroupingSeparator = String.valueOf(symbols.getGroupingSeparator());
+		
+		// If a mismatch between locale and website, try and fix it
+		final int decimalFirst = price.indexOf(normalDecimalSeparator);
+		final int groupingFirst = price.indexOf(normalGroupingSeparator);
+		
+		final boolean hasNormalDecimalSeparator = (decimalFirst != -1);
+		final boolean hasNormalGroupingSeparator = (groupingFirst != -1);
+		final boolean hasBothButReversed = hasNormalDecimalSeparator && hasNormalGroupingSeparator && groupingFirst > decimalFirst;
+		if (!hasNormalDecimalSeparator) {
+			price = price.replaceAll("[.,]", normalDecimalSeparator);
+		} else if (hasBothButReversed) {
+			price = swapCharactersInString(price, normalDecimalSeparator.charAt(0), normalDecimalSeparator.charAt(0));
+		} else if (hasNormalDecimalSeparator && !hasNormalGroupingSeparator) {
+			String substring = price.substring(decimalFirst + 1);
+			if (substring.matches("^\\d{3,}.*"))
+				price = price.replaceAll(normalDecimalSeparator, normalGroupingSeparator);
+		}
+		
+		return price;
+	}
+	
+	private static String swapCharactersInString(final String str, final char first, final char second) {
+		char[] chars = str.toCharArray();
+		for (char c : chars) {
+			if (c == first)
+				c = second;
+			else if (c == second)
+				c = first;
+		}
+		return String.valueOf(chars);
 	}
 }

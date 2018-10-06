@@ -5,11 +5,16 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.Currency;
 import java.util.Locale;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 import org.junit.Test;
+
+import me.mircea.licenta.core.utils.HtmlUtil;
 
 public class PricePointTest {
 	@Test
@@ -33,5 +38,51 @@ public class PricePointTest {
 		PricePoint p2 = new PricePoint(2, BigDecimal.valueOf(20.05), ron, LocalDate.now().plusDays(1), null);
 		
 		assertTrue(p1.compareTo(p2) < 0);
+	}
+	
+	@Test
+	public void shouldParseCorrectly() throws ParseException {
+		Locale locale = Locale.forLanguageTag("ro-ro");
+		final double delta = 1e-5;
+		
+		String text = "<div data-ng-if=\"::product.stockStatus.slug != 'indisponibil' &amp;&amp; product.stockStatus.slug != 'promo'\" data-ng-bind-html=\"::h.formatPrice(product.price)\" class=\"productPrice ng-binding ng-scope discountPrice\" data-ng-class=\"::product.discount?'discountPrice':''\"><span class=\"suma\" itemprop=\"price\" content=\"16.99\">16</span><span class=\"bani\">99</span><span class=\"priceCurrency\" content=\"RON\">lei</span></div>";
+		Element priceElement = Jsoup.parse(text);
+		PricePoint price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		assertEquals(16.99, price.getNominalValue().doubleValue(), delta);
+	
+		text = "<span class=\"pret\">19.2lei <del>24lei</del></span>";
+		priceElement = Jsoup.parse(text);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		assertEquals(19.2, price.getNominalValue().doubleValue(), delta);
+		
+		text = "<span class=\"pret\">10.79lei <del>27lei</del></span>";
+		priceElement = Jsoup.parse(text);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		assertEquals(10.79, price.getNominalValue().doubleValue(), delta);
+		
+		text = "<span class=\"pret\">28lei <del>35lei</del></span>";
+		priceElement = Jsoup.parse(text);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		assertEquals(28.0, price.getNominalValue().doubleValue(), delta);
+	}
+	@Test
+	public void shouldParseCorrectlyOnEdgeCases() throws ParseException {
+		Locale locale = Locale.forLanguageTag("ro-ro");
+		final double delta = 1e-5;
+		
+		String text = "<span class=\"pret\">1.5&nbsp;lei</span>";
+		Element priceElement = Jsoup.parse(text);
+		PricePoint price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		assertEquals(1.5, price.getNominalValue().doubleValue(), delta);
+		
+		text = "<span class=\"pret\">1,260&nbsp;lei</span>";
+		priceElement = Jsoup.parse(text);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		assertEquals(1260.0, price.getNominalValue().doubleValue(), delta);
+		
+		text = "<div data-ng-if=\"::product.stockStatus.slug != 'indisponibil' &amp;&amp; product.stockStatus.slug != 'promo'\" data-ng-bind-html=\"::h.formatPrice(product.price)\" class=\"productPrice ng-binding ng-scope\" data-ng-class=\"::product.discount?'discountPrice':''\"><span class=\"suma\" itemprop=\"price\" content=\"2017.00\">2017</span><span class=\"bani\">00</span><span class=\"priceCurrency\" content=\"RON\">lei</span></div>";
+		priceElement = Jsoup.parse(text);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		assertEquals(2017.0, price.getNominalValue().doubleValue(), delta);
 	}
 }
