@@ -169,7 +169,7 @@ public class PricePoint implements Comparable<PricePoint> {
 		}
 
 		BigDecimal nominalValue = (BigDecimal) noFormat.parse(price);
-		// If the price is like 4700 RON (actually 47.00 RON)
+		//TODO: Fix this: If the price is like 4700 RON (actually 47.00 RON)
 		if (nominalValue.stripTrailingZeros().scale() <= 0 && nominalValue.compareTo(BigDecimal.valueOf(100)) >= 1)
 			nominalValue = nominalValue.divide(BigDecimal.valueOf(100));
 

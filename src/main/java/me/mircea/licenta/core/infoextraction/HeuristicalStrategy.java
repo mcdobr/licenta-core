@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,11 +42,9 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 	public Book extractBook(Element htmlElement, Document productPage) {
 		Preconditions.checkNotNull(htmlElement);
 
-		String title = htmlElement.select("[class*='titl'],[class*='nume'],[class*='name']").text();
+		String title = htmlElement.select("[class*='titl'],[class*='nume'],[class*='name']").first().text();
 
 		Book book = new Book();
-		book.setTitle(title);
-
 		String imageUrl = htmlElement.select("img[src]").attr("src");
 		book.setCoverUrl(imageUrl);
 		
@@ -53,7 +52,7 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 		// Extract product attributes and attach to product
 		final Map<String, String> productAttributes = this.extractProductAttributes(productPage);
 		if (productAttributes.isEmpty())
-			logger.error("AttributesMap is empty on {}", productPage.location());
+			logger.debug("AttributesMap is empty on {}", productPage.location());
 
 		
 		Set<String> authorWordSet = new HashSet<>();
@@ -67,22 +66,35 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 			.findFirst().ifPresent(authorTag -> 
 			book.setAuthors(Arrays.asList(productAttributes.get(authorTag).split(".,&"))));
 
-		productAttributes.keySet().stream().filter(key -> key.contains("ISBN")).findFirst()
+		// Sometimes the authors is included in the title, so we wish to subtract that
+		String authorInTitle = String.join("|", book.getAuthors());
+		//title = title.replaceAll(authorInTitle, "");
+		book.setTitle(title);
+		
+		
+		Set<String> codeWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+		codeWordSet.add("isbn");
+		codeWordSet.add("cod");
+		
+		productAttributes.keySet().stream().filter(key -> codeWordSet.contains(key)).findFirst()
+			.ifPresent(key -> book.setIsbn(productAttributes.get(key).replaceAll("^[ a-zA-Z]*", "")));
+		
+		/*productAttributes.keySet().stream().filter(key -> key.contains("ISBN")).findFirst()
 				.ifPresent(key -> book.setIsbn(productAttributes.get(key)));
-
+		*/
 		
-		Map<String, String> formats = new HashMap<>();
-		formats.put("hardcover", "hardcover");
-		formats.put("paperback", "paperback");
-		formats.put("pdf", "pdf");
-		formats.put("epub", "epub");
-		formats.put("mobi", "mobi");
+		Map<String, String> formatsWordSet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		formatsWordSet.put("hardcover", "hardcover");
+		formatsWordSet.put("paperback", "paperback");
+		formatsWordSet.put("pdf", "pdf");
+		formatsWordSet.put("epub", "epub");
+		formatsWordSet.put("mobi", "mobi");
 	
-		formats.put("cartonata", "hardcover");
-		formats.put("necartonata", "paperback");
+		formatsWordSet.put("cartonata", "hardcover");
+		formatsWordSet.put("necartonata", "paperback");
 		
-		productAttributes.values().stream().filter(key -> formats.containsKey(key.toLowerCase()))
-			.findFirst().ifPresent(format -> book.setFormat(format));
+		productAttributes.values().stream().filter(key -> formatsWordSet.containsKey(key))
+			.findFirst().ifPresent(format -> book.setFormat(formatsWordSet.get(format)));
 		
 		
 		Set<String> yearWordSet = new HashSet<>();
@@ -147,7 +159,7 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 		Matcher isbnMatcher = isbnPattern.matcher(productPage.text());
 		if (isbnMatcher.find()) {
 			String isbn = isbnMatcher.group();
-			logger.info("Found isbn {}", isbn);
+			logger.debug("Found isbn {}", isbn);
 
 			String findIsbnElement = String.format("*:contains(%s)", isbn);
 			Element isbnElement = productPage.select(findIsbnElement).last();

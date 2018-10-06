@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.HashSet;
 
 import javax.persistence.*;
 
@@ -28,7 +28,7 @@ public class Book {
 	@Column(nullable = false)
 	private String title;
 
-	@ElementCollection
+	@ElementCollection(fetch = FetchType.EAGER)
 	private List<String> authors;
 
 	@Column(unique = true)
@@ -53,7 +53,7 @@ public class Book {
 
 	public Book() {
 		this.authors = new ArrayList<>();
-		this.pricepoints = new TreeSet<>();
+		this.pricepoints = new HashSet<>();
 	}
 
 	public Book(Integer id, String title, String description, List<String> authors) {
@@ -64,7 +64,7 @@ public class Book {
 		this.title = title;
 		this.description = description;
 		this.authors = authors;
-		this.pricepoints = new TreeSet<>();
+		this.pricepoints = new HashSet<>();
 	}
 
 	private Book(Book persisted, Book addition) {
@@ -80,6 +80,7 @@ public class Book {
 		//authors
 		isbn = (String)Normalizer.getNotNullIfPossible(persisted.isbn, addition.isbn);
 		description = Normalizer.getLongestOfNullableStrings(persisted.description, addition.description);
+		
 		pricepoints = persisted.pricepoints;	
 		pricepoints.addAll(addition.pricepoints);
 		
@@ -101,7 +102,7 @@ public class Book {
 		try {
 			merged = new Book(persisted, addition);
 		} catch (Exception e) {
-			logger.trace("Unsuccessful merger of two books {}", e);
+			logger.error("Unsuccessful merger of two books {}", e);
 		}
 		
 		return Optional.ofNullable(merged);
