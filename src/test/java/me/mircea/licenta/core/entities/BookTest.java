@@ -7,11 +7,16 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Currency;
+import java.util.Locale;
 import java.util.Optional;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class BookTest {
+	
 	@Test
 	public void shouldBeEqual() {
 		PricePoint price1 = new PricePoint(1, BigDecimal.valueOf(20.00), null, LocalDate.now(), null);
@@ -48,5 +53,29 @@ public class BookTest {
 		persisted.setIsbn("0987654321098");
 		mergeOperation = Book.merge(persisted, addition);
 		assertFalse(mergeOperation.isPresent());
+	}
+	
+	@Test
+	public void shouldHaveOnlyOnePricepointPerSiteDay() {
+		Book persisted = new Book(1, "Anna Karenina", "Limba de lemn", Arrays.asList("Lev Tolstoi"));
+		Book addition = new Book(null, "Anna Karenina", "Si mai multa limba de lemn", Arrays.asList("Lev Tolstoi"));
+		
+		Site site = new Site(1, "alexa", "https://someurl.com");
+		
+		final Currency ron = Currency.getInstance(Locale.forLanguageTag("ro-ro"));
+		PricePoint p1 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now(), site);
+		PricePoint p2 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now(), site);
+
+		PricePoint p3 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now().plusDays(1), site);
+		
+		persisted.getPricepoints().add(p1);
+		persisted.getPricepoints().add(p3);
+		addition.getPricepoints().add(p2);
+		
+		Optional<Book> mergeOperation = Book.merge(persisted, addition);
+		assertTrue(mergeOperation.isPresent());
+		Book merged = mergeOperation.get();
+		
+		assertEquals(2, merged.getPricepoints().size());
 	}
 }

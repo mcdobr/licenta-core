@@ -15,7 +15,7 @@ import com.google.common.base.Preconditions;
 
 @Entity
 @Table(name = "pricepoints")
-public class PricePoint implements Comparable<PricePoint> {
+public class PricePoint {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
@@ -155,14 +155,6 @@ public class PricePoint implements Comparable<PricePoint> {
 	}
 
 	/**
-	 * @brief Compares pricepoints by day.
-	 */
-	@Override
-	public int compareTo(PricePoint o) {
-		return getRetrievedDay().compareTo(o.getRetrievedDay());
-	}
-
-	/**
 	 * @brief Transforms a price tag string into a PricePoint. If say, a romanian
 	 *        site uses the . (dot) decimal separator, this replaces all commas and
 	 *        dots to the romanian default decimal separator (which is a comma). If
@@ -216,24 +208,25 @@ public class PricePoint implements Comparable<PricePoint> {
 		final boolean hasBothButReversed = hasNormalDecimalSeparator && hasNormalGroupingSeparator && groupingFirst > decimalFirst;
 		if (!hasNormalDecimalSeparator) {
 			price = price.replaceAll("[.,]", normalDecimalSeparator);
-		} else if (hasBothButReversed) {
-			price = swapCharactersInString(price, normalDecimalSeparator.charAt(0), normalDecimalSeparator.charAt(0));
-		} else if (hasNormalDecimalSeparator && !hasNormalGroupingSeparator) {
+		} else if (!hasNormalGroupingSeparator) { //has decimal but no grouping
 			String substring = price.substring(decimalFirst + 1);
 			if (substring.matches("^\\d{3,}.*"))
 				price = price.replaceAll(normalDecimalSeparator, normalGroupingSeparator);
-		}
+		} else if (hasBothButReversed) {
+			price = swapCharactersInString(price, normalDecimalSeparator.charAt(0), normalGroupingSeparator.charAt(0));
+		} 
 		
 		return price;
 	}
 	
 	private static String swapCharactersInString(final String str, final char first, final char second) {
 		char[] chars = str.toCharArray();
-		for (char c : chars) {
-			if (c == first)
-				c = second;
-			else if (c == second)
-				c = first;
+		for (int i = 0; i < chars.length; ++i) {
+			if (chars[i] == first)
+				chars[i] = second;
+			else if (chars[i] == second)
+				chars[i] = first;
+				
 		}
 		return String.valueOf(chars);
 	}

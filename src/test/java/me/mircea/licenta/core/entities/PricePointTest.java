@@ -32,15 +32,6 @@ public class PricePointTest {
 	}
 	
 	@Test
-	public void shouldCompareCorrectly() {
-		Currency ron = Currency.getInstance(Locale.forLanguageTag("ro-ro"));
-		PricePoint p1 = new PricePoint(1, BigDecimal.valueOf(20.05), ron, LocalDate.now(), null);
-		PricePoint p2 = new PricePoint(2, BigDecimal.valueOf(20.05), ron, LocalDate.now().plusDays(1), null);
-		
-		assertTrue(p1.compareTo(p2) < 0);
-	}
-	
-	@Test
 	public void shouldParseCorrectly() throws ParseException {
 		Locale locale = Locale.forLanguageTag("ro-ro");
 		final double delta = 1e-5;
@@ -74,6 +65,11 @@ public class PricePointTest {
 		Element priceElement = Jsoup.parse(text);
 		PricePoint price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
 		assertEquals(1.5, price.getNominalValue().doubleValue(), delta);
+		
+		text = "<span class=\"pret\">2,780.5&nbsp;lei</span>";
+		priceElement = Jsoup.parse(text);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		assertEquals(2780.5, price.getNominalValue().doubleValue(), delta);
 		
 		text = "<span class=\"pret\">1,260&nbsp;lei</span>";
 		priceElement = Jsoup.parse(text);
