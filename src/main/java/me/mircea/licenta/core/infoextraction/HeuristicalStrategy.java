@@ -3,8 +3,6 @@ package me.mircea.licenta.core.infoextraction;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +30,38 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 	private static final String PRODUCT_SELECTOR = String.format("%s:not(:has(%s))", IMAGE_WITH_LINK_SELECTOR,
 			IMAGE_WITH_LINK_SELECTOR);
 
+	private static final Set<String> authorWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	private static final Set<String> codeWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	private static final Map<String, String> formatsWordSet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private static final Set<String> yearWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	private static final Set<String> publisherWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	
+	static {
+		authorWordSet.add("autor");
+		authorWordSet.add("autori");
+		authorWordSet.add("author");
+		authorWordSet.add("authors");
+
+		codeWordSet.add("isbn");
+		codeWordSet.add("cod");
+		
+		formatsWordSet.put("hardcover", "hardcover");
+		formatsWordSet.put("paperback", "paperback");
+		formatsWordSet.put("pdf", "pdf");
+		formatsWordSet.put("epub", "epub");
+		formatsWordSet.put("mobi", "mobi");
+	
+		formatsWordSet.put("cartonata", "hardcover");
+		formatsWordSet.put("necartonata", "paperback");
+		
+		yearWordSet.add("an");
+		yearWordSet.add("anul");
+		yearWordSet.add("year");
+		
+		publisherWordSet.add("publisher");
+		publisherWordSet.add("editura");
+	}
+	
 	@Override
 	public Elements extractProductHtmlElements(Document doc) {
 		Preconditions.checkNotNull(doc);
@@ -45,7 +75,7 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 		String title = htmlElement.select("[class*='titl'],[class*='nume'],[class*='name']").first().text();
 
 		Book book = new Book();
-		String imageUrl = htmlElement.select("img[src]").attr("src");
+		String imageUrl = htmlElement.select("img[src]").first().absUrl("src");
 		book.setCoverUrl(imageUrl);
 		
 		
@@ -54,66 +84,26 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 		if (productAttributes.isEmpty())
 			logger.debug("AttributesMap is empty on {}", productPage.location());
 
-		
-		Set<String> authorWordSet = new HashSet<>();
-		authorWordSet.add("autor");
-		authorWordSet.add("autori");
-		
-		authorWordSet.add("author");
-		authorWordSet.add("authors");
-		
-		productAttributes.keySet().stream().filter(key -> authorWordSet.contains(key.toLowerCase()))
-			.findFirst().ifPresent(authorTag -> 
-			book.setAuthors(Arrays.asList(productAttributes.get(authorTag).split(".,&"))));
-
-		// Sometimes the authors is included in the title, so we wish to subtract that
-		String authorInTitle = String.join("|", book.getAuthors());
-		//title = title.replaceAll(authorInTitle, "");
 		book.setTitle(title);
 		
+		productAttributes.keySet().stream().filter(authorWordSet::contains)
+			.findFirst().ifPresent(authorTag -> 
+			book.setAuthors(Arrays.asList(productAttributes.get(authorTag).split("[.,&]"))));
 		
-		Set<String> codeWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-		codeWordSet.add("isbn");
-		codeWordSet.add("cod");
-		
-		productAttributes.keySet().stream().filter(key -> codeWordSet.contains(key)).findFirst()
+		productAttributes.keySet().stream().filter(codeWordSet::contains).findFirst()
 			.ifPresent(key -> book.setIsbn(productAttributes.get(key).replaceAll("^[ a-zA-Z]*", "")));
 		
-		/*productAttributes.keySet().stream().filter(key -> key.contains("ISBN")).findFirst()
-				.ifPresent(key -> book.setIsbn(productAttributes.get(key)));
-		*/
-		
-		Map<String, String> formatsWordSet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-		formatsWordSet.put("hardcover", "hardcover");
-		formatsWordSet.put("paperback", "paperback");
-		formatsWordSet.put("pdf", "pdf");
-		formatsWordSet.put("epub", "epub");
-		formatsWordSet.put("mobi", "mobi");
-	
-		formatsWordSet.put("cartonata", "hardcover");
-		formatsWordSet.put("necartonata", "paperback");
-		
-		productAttributes.values().stream().filter(key -> formatsWordSet.containsKey(key))
+		productAttributes.values().stream().filter(formatsWordSet::containsKey)
 			.findFirst().ifPresent(format -> book.setFormat(formatsWordSet.get(format)));
 		
-		
-		Set<String> yearWordSet = new HashSet<>();
-		yearWordSet.add("an");
-		yearWordSet.add("anul");
-		yearWordSet.add("year");
-		
-		productAttributes.keySet().stream().filter(key -> yearWordSet.contains(key.toLowerCase()))
+		productAttributes.keySet().stream().filter(yearWordSet::contains)
 			.findFirst().ifPresent(key -> book.setReleaseYear(Integer.parseInt(productAttributes.get(key))));
 		
-		Set<String> publisherWordSet = new HashSet<>();
-		publisherWordSet.add("publisher");
-		publisherWordSet.add("editura");
-		productAttributes.keySet().stream().filter(key -> publisherWordSet.contains(key.toLowerCase()))
+		productAttributes.keySet().stream().filter(publisherWordSet::contains)
 			.findFirst().ifPresent(key -> book.setPublishingHouse(productAttributes.get(key)));
 		
 		book.setDescription(this.extractProductDescription(productPage));
 
-		
 		return book;
 	}
 
@@ -166,8 +156,6 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 
 			if (isbnElement.text().trim().equals(isbn))
 				isbnElement = isbnElement.parent();
-
-			// logger.warn(isbnElement.text());
 
 			Elements keyValuePairs = isbnElement.siblingElements();
 			keyValuePairs.add(isbnElement);

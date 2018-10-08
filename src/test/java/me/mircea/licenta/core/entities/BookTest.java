@@ -11,17 +11,12 @@ import java.util.Currency;
 import java.util.Locale;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class BookTest {
 	
 	@Test
 	public void shouldBeEqual() {
-		PricePoint price1 = new PricePoint(1, BigDecimal.valueOf(20.00), null, LocalDate.now(), null);
-		PricePoint price2 = new PricePoint(1, BigDecimal.valueOf(20.00), null, LocalDate.now(), null);
-	
 		Book book1 = new Book();
 		Book book2 = new Book();
 		
@@ -29,6 +24,14 @@ public class BookTest {
 		
 		book1.setIsbn("978-1234-1093-23");
 		book2.setIsbn("978 -1234-1093-23");
+		
+		assertEquals(book1, book2);
+		
+		PricePoint price1 = new PricePoint(1, BigDecimal.valueOf(20.00), null, LocalDate.now(), null);
+		PricePoint price2 = new PricePoint(1, BigDecimal.valueOf(20.00), null, LocalDate.now(), null);
+		
+		book1.getPricepoints().add(price1);
+		book2.getPricepoints().add(price2);
 		
 		assertEquals(book1, book2);
 	}

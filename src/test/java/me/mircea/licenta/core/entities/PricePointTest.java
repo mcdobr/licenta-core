@@ -2,7 +2,6 @@ package me.mircea.licenta.core.entities;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -13,8 +12,6 @@ import java.util.Locale;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.junit.Test;
-
-import me.mircea.licenta.core.utils.HtmlUtil;
 
 public class PricePointTest {
 	@Test
