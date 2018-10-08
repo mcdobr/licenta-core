@@ -23,7 +23,8 @@ public class PricePoint {
 	private BigDecimal nominalValue;
 	private Currency currency;
 	private LocalDate retrievedDay;
-
+	private String url;
+	
 	@ManyToOne
 	private Site site;
 
@@ -31,7 +32,7 @@ public class PricePoint {
 		retrievedDay = LocalDate.now();
 	}
 
-	public PricePoint(Integer id, BigDecimal nominalValue, Currency currency, LocalDate retrievedDay, Site site) {
+	public PricePoint(Integer id, BigDecimal nominalValue, Currency currency, LocalDate retrievedDay, String url, Site site) {
 		super();
 		Preconditions.checkNotNull(retrievedDay);
 		
@@ -39,11 +40,12 @@ public class PricePoint {
 		this.nominalValue = nominalValue;
 		this.currency = currency;
 		this.retrievedDay = retrievedDay;
+		this.url = url;
 		this.site = site;
 	}
 	
-	public PricePoint(BigDecimal nominalValue, Currency currency, LocalDate retrievedDay, Site site) {
-		this(null, nominalValue, currency, retrievedDay, site);
+	public PricePoint(BigDecimal nominalValue, Currency currency, LocalDate retrievedDay, String url, Site site) {
+		this(null, nominalValue, currency, retrievedDay, url, site);
 	}
 
 	public Integer getId() {
@@ -77,6 +79,14 @@ public class PricePoint {
 	public void setRetrievedDay(LocalDate retrievedDay) {
 		this.retrievedDay = retrievedDay;
 	}
+	
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
 
 	public Site getSite() {
 		return site;
@@ -86,9 +96,6 @@ public class PricePoint {
 		this.site = site;
 	}
 
-	/** (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -96,14 +103,12 @@ public class PricePoint {
 		builder.append(", nominalValue=").append(nominalValue);
 		builder.append(", currency=").append(currency);
 		builder.append(", retrievedDay=").append(retrievedDay);
+		builder.append(", url=").append(url);
 		builder.append(", site=").append(site);
 		builder.append("]");
 		return builder.toString();
 	}
-
-	/** (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -111,13 +116,11 @@ public class PricePoint {
 		result = prime * result + ((currency == null) ? 0 : currency.hashCode());
 		result = prime * result + ((nominalValue == null) ? 0 : nominalValue.hashCode());
 		result = prime * result + ((retrievedDay == null) ? 0 : retrievedDay.hashCode());
+		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		result = prime * result + ((site == null) ? 0 : site.hashCode());
 		return result;
 	}
 
-	/** (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -144,6 +147,12 @@ public class PricePoint {
 			if (other.retrievedDay != null)
 				return false;
 		} else if (!retrievedDay.equals(other.retrievedDay))
+			return false;
+		
+		if (url == null) {
+			if (other.url != null)
+				return false;
+		} else if (!url.equals(other.url))
 			return false;
 		
 		if (site == null) {
@@ -173,7 +182,7 @@ public class PricePoint {
 	 * @throws ParseException
 	 *             if the String is not formatted according to the locale.
 	 */
-	public static PricePoint valueOf(String price, final Locale locale, LocalDate retrievedDay, Site site) throws ParseException {
+	public static PricePoint valueOf(String price, final Locale locale, LocalDate retrievedDay, String url, Site site) throws ParseException {
 		price = normalizeStringWithLocale(price, locale);
 		
 		final NumberFormat noFormat = NumberFormat.getNumberInstance(locale);
@@ -185,7 +194,7 @@ public class PricePoint {
 		if (!price.matches(".*[.,].*") && nominalValue.stripTrailingZeros().scale() <= 0 && nominalValue.compareTo(BigDecimal.valueOf(100)) >= 1)
 			nominalValue = nominalValue.divide(BigDecimal.valueOf(100));
 
-		return new PricePoint(null, nominalValue, Currency.getInstance(locale), retrievedDay, site);
+		return new PricePoint(null, nominalValue, Currency.getInstance(locale), retrievedDay, url, site);
 	}
 
 	/**

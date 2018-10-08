@@ -27,8 +27,8 @@ public class BookTest {
 		
 		assertEquals(book1, book2);
 		
-		PricePoint price1 = new PricePoint(1, BigDecimal.valueOf(20.00), null, LocalDate.now(), null);
-		PricePoint price2 = new PricePoint(1, BigDecimal.valueOf(20.00), null, LocalDate.now(), null);
+		PricePoint price1 = new PricePoint(1, BigDecimal.valueOf(20.00), null, LocalDate.now(), null, null);
+		PricePoint price2 = new PricePoint(1, BigDecimal.valueOf(20.00), null, LocalDate.now(), null, null);
 		
 		book1.getPricepoints().add(price1);
 		book2.getPricepoints().add(price2);
@@ -66,10 +66,10 @@ public class BookTest {
 		Site site = new Site(1, "alexa", "https://someurl.com");
 		
 		final Currency ron = Currency.getInstance(Locale.forLanguageTag("ro-ro"));
-		PricePoint p1 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now(), site);
-		PricePoint p2 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now(), site);
+		PricePoint p1 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now(), null, site);
+		PricePoint p2 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now(), null, site);
 
-		PricePoint p3 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now().plusDays(1), site);
+		PricePoint p3 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now().plusDays(1), null, site);
 		
 		persisted.getPricepoints().add(p1);
 		persisted.getPricepoints().add(p3);

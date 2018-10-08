@@ -20,11 +20,11 @@ public class PricePointTest {
 		Currency ron2 = Currency.getInstance(Locale.forLanguageTag("ro-ro"));
 		assertEquals(ron, ron2);
 		
-		PricePoint p1 = new PricePoint(1, BigDecimal.valueOf(20.05), ron, LocalDate.now(), null);
-		PricePoint p2 = new PricePoint(2, BigDecimal.valueOf(20.05), ron, LocalDate.now(), null);
+		PricePoint p1 = new PricePoint(1, BigDecimal.valueOf(20.05), ron, LocalDate.now(), null, null);
+		PricePoint p2 = new PricePoint(2, BigDecimal.valueOf(20.05), ron, LocalDate.now(), null, null);
 		assertEquals(p1, p2);
 		
-		PricePoint p3 = new PricePoint(2, BigDecimal.valueOf(20.05), ron, LocalDate.now().plusDays(1), null);
+		PricePoint p3 = new PricePoint(2, BigDecimal.valueOf(20.05), ron, LocalDate.now().plusDays(1), null, null);
 		assertNotEquals(p1, p3);
 	}
 	
@@ -35,22 +35,22 @@ public class PricePointTest {
 		
 		String text = "<div data-ng-if=\"::product.stockStatus.slug != 'indisponibil' &amp;&amp; product.stockStatus.slug != 'promo'\" data-ng-bind-html=\"::h.formatPrice(product.price)\" class=\"productPrice ng-binding ng-scope discountPrice\" data-ng-class=\"::product.discount?'discountPrice':''\"><span class=\"suma\" itemprop=\"price\" content=\"16.99\">16</span><span class=\"bani\">99</span><span class=\"priceCurrency\" content=\"RON\">lei</span></div>";
 		Element priceElement = Jsoup.parse(text);
-		PricePoint price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		PricePoint price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null, null);
 		assertEquals(16.99, price.getNominalValue().doubleValue(), delta);
 	
 		text = "<span class=\"pret\">19.2lei <del>24lei</del></span>";
 		priceElement = Jsoup.parse(text);
-		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null, null);
 		assertEquals(19.2, price.getNominalValue().doubleValue(), delta);
 		
 		text = "<span class=\"pret\">10.79lei <del>27lei</del></span>";
 		priceElement = Jsoup.parse(text);
-		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null, null);
 		assertEquals(10.79, price.getNominalValue().doubleValue(), delta);
 		
 		text = "<span class=\"pret\">28lei <del>35lei</del></span>";
 		priceElement = Jsoup.parse(text);
-		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null, null);
 		assertEquals(28.0, price.getNominalValue().doubleValue(), delta);
 	}
 	@Test
@@ -60,22 +60,22 @@ public class PricePointTest {
 		
 		String text = "<span class=\"pret\">1.5&nbsp;lei</span>";
 		Element priceElement = Jsoup.parse(text);
-		PricePoint price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		PricePoint price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null, null);
 		assertEquals(1.5, price.getNominalValue().doubleValue(), delta);
 		
 		text = "<span class=\"pret\">2,780.5&nbsp;lei</span>";
 		priceElement = Jsoup.parse(text);
-		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null, null);
 		assertEquals(2780.5, price.getNominalValue().doubleValue(), delta);
 		
 		text = "<span class=\"pret\">1,260&nbsp;lei</span>";
 		priceElement = Jsoup.parse(text);
-		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null, null);
 		assertEquals(1260.0, price.getNominalValue().doubleValue(), delta);
 		
 		text = "<div data-ng-if=\"::product.stockStatus.slug != 'indisponibil' &amp;&amp; product.stockStatus.slug != 'promo'\" data-ng-bind-html=\"::h.formatPrice(product.price)\" class=\"productPrice ng-binding ng-scope\" data-ng-class=\"::product.discount?'discountPrice':''\"><span class=\"suma\" itemprop=\"price\" content=\"2017.00\">2017</span><span class=\"bani\">00</span><span class=\"priceCurrency\" content=\"RON\">lei</span></div>";
 		priceElement = Jsoup.parse(text);
-		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null);
+		price = PricePoint.valueOf(priceElement.text(), locale, LocalDate.now(), null, null);
 		assertEquals(2017.0, price.getNominalValue().doubleValue(), delta);
 	}
 }

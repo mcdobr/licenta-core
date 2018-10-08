@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import me.mircea.licenta.core.entities.PricePoint;
 import me.mircea.licenta.core.entities.Book;
 import me.mircea.licenta.core.entities.Site;
+import me.mircea.licenta.core.utils.HtmlUtil;
 
 public class HeuristicalStrategy implements InformationExtractionStrategy {
 	private static final Logger logger = LoggerFactory.getLogger(HeuristicalStrategy.class);
@@ -88,7 +89,7 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 		
 		productAttributes.keySet().stream().filter(authorWordSet::contains)
 			.findFirst().ifPresent(authorTag -> 
-			book.setAuthors(Arrays.asList(productAttributes.get(authorTag).split("[.,&]"))));
+			book.setAuthors(Arrays.asList(productAttributes.get(authorTag).split("[,&]"))));
 		
 		productAttributes.keySet().stream().filter(codeWordSet::contains).findFirst()
 			.ifPresent(key -> book.setIsbn(productAttributes.get(key).replaceAll("^[ a-zA-Z]*", "")));
@@ -114,7 +115,7 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 
 		PricePoint pricePoint = null;
 		try {
-			pricePoint = PricePoint.valueOf(price, locale, retrievedDay, site);
+			pricePoint = PricePoint.valueOf(price, locale, retrievedDay, HtmlUtil.extractFirstLinkOfElement(htmlElement), site);
 		} catch (ParseException e) {
 			logger.warn("Price tag was ill-formated {}", price);
 		}
