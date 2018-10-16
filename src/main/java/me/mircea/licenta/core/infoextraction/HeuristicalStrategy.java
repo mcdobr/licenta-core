@@ -22,27 +22,41 @@ import com.google.common.base.Preconditions;
 import me.mircea.licenta.core.entities.PricePoint;
 import me.mircea.licenta.core.entities.Book;
 import me.mircea.licenta.core.entities.Site;
+import me.mircea.licenta.core.entities.WebWrapper;
+import me.mircea.licenta.core.utils.CssUtil;
 import me.mircea.licenta.core.utils.HtmlUtil;
 
-public class HeuristicalStrategy implements InformationExtractionStrategy {
+public class HeuristicalStrategy implements InformationExtractionStrategy, WrapperGenerationStrategy {
 	private static final Logger logger = LoggerFactory.getLogger(HeuristicalStrategy.class);
 	private static final Pattern isbnPattern = Pattern.compile("(?=[-\\d\\ xX]{10,})\\d+[-\\ ]?\\d+[-\\ ]?\\d+[-\\ ]?\\d*[-\\ ]?[\\dxX]");
 	private static final String IMAGE_WITH_LINK_SELECTOR = "[class*='produ']:has(img):has(a)";
-	private static final String PRODUCT_SELECTOR = String.format("%s:not(:has(%s))", IMAGE_WITH_LINK_SELECTOR,
-			IMAGE_WITH_LINK_SELECTOR);
+	private static final String PRODUCT_SELECTOR = CssUtil.makeLeafOfSelector(IMAGE_WITH_LINK_SELECTOR);
 
-	private static final Set<String> authorWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-	private static final Set<String> codeWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-	private static final Map<String, String> formatsWordSet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	private static final Set<String> yearWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-	private static final Set<String> publisherWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	public static final Set<String> titleWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	public static final Set<String> authorWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	public static final Set<String> priceWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	public static final Set<String> codeWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	public static final Map<String, String> formatsWordSet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	public static final Set<String> yearWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	public static final Set<String> publisherWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	public static final Set<String> descriptionWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+	
+	private WebWrapper webWrapper;
 	
 	static {
+		titleWordSet.add("titlu");
+		titleWordSet.add("title");
+		titleWordSet.add("nume");
+		titleWordSet.add("name");
+		
 		authorWordSet.add("autor");
 		authorWordSet.add("autori");
 		authorWordSet.add("author");
 		authorWordSet.add("authors");
 
+		priceWordSet.add("pret");
+		priceWordSet.add("price");
+		
 		codeWordSet.add("isbn");
 		codeWordSet.add("cod");
 		
@@ -61,6 +75,9 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 		
 		publisherWordSet.add("publisher");
 		publisherWordSet.add("editura");
+		
+		descriptionWordSet.add("descriere");
+		descriptionWordSet.add("description");
 	}
 	
 	@Override
@@ -70,26 +87,32 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 	}
 
 	@Override
-	public Book extractBook(Element htmlElement, Document productPage) {
+	public Book extractBook(Element htmlElement, Document bookPage) {
 		Preconditions.checkNotNull(htmlElement);
 
-		String title = htmlElement.select("[class*='titl'],[class*='nume'],[class*='name']").first().text();
-
 		Book book = new Book();
+		String title = htmlElement.select(CssUtil.makeClassOrIdContains(titleWordSet)).first().text();
+		book.setTitle(title);
+		
 		String imageUrl = htmlElement.select("img[src]").first().absUrl("src");
 		book.setCoverUrl(imageUrl);
 		
-		
-		// Extract product attributes and attach to product
-		final Map<String, String> productAttributes = this.extractProductAttributes(productPage);
+		// Extract product specs and attach to product
+		final Map<String, String> productAttributes = this.extractProductAttributes(bookPage);
 		if (productAttributes.isEmpty())
-			logger.debug("AttributesMap is empty on {}", productPage.location());
+			logger.debug("AttributesMap is empty on {}", bookPage.location());
 
-		book.setTitle(title);
 		
-		productAttributes.keySet().stream().filter(authorWordSet::contains)
-			.findFirst().ifPresent(authorTag -> 
-			book.setAuthors(Arrays.asList(productAttributes.get(authorTag).split("[,&]"))));
+		String authorSeparatorsRegex = "[,&]\\s*";
+		Element authorElement = bookPage.select(CssUtil.makeClassOrIdContains(authorWordSet)).first();
+		if (authorElement != null) {
+			book.setAuthors(Arrays.asList(authorElement.text().split(authorSeparatorsRegex)));
+		} else {
+			productAttributes.keySet().stream()
+				.filter(authorWordSet::contains)
+				.findFirst().ifPresent(authorTag -> 
+				book.setAuthors(Arrays.asList(productAttributes.get(authorTag).split(authorSeparatorsRegex))));
+		}
 		
 		productAttributes.keySet().stream().filter(codeWordSet::contains).findFirst()
 			.ifPresent(key -> book.setIsbn(productAttributes.get(key).replaceAll("^[ a-zA-Z]*", "")));
@@ -103,7 +126,7 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 		productAttributes.keySet().stream().filter(publisherWordSet::contains)
 			.findFirst().ifPresent(key -> book.setPublishingHouse(productAttributes.get(key)));
 		
-		book.setDescription(this.extractProductDescription(productPage));
+		book.setDescription(this.extractProductDescription(bookPage));
 
 		return book;
 	}
@@ -111,7 +134,7 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 	@Override
 	public PricePoint extractPricePoint(Element htmlElement, Locale locale, LocalDate retrievedDay, Site site) {
 		Preconditions.checkNotNull(htmlElement);
-		String price = htmlElement.select("[class*='pret'],[class*='price']").text();
+		String price = htmlElement.select(CssUtil.makeClassOrIdContains(priceWordSet)).text();
 
 		PricePoint pricePoint = null;
 		try {
@@ -169,5 +192,19 @@ public class HeuristicalStrategy implements InformationExtractionStrategy {
 		}
 
 		return productAttributes;
+	}
+
+	@Override
+	public WebWrapper getWrapper() {
+		WebWrapper wrapper = new WebWrapper();
+		
+		
+		return wrapper;
+	}
+
+	@Override
+	public String generateCssSelectorFor(Set<String> wordSet) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

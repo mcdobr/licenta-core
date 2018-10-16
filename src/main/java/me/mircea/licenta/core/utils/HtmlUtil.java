@@ -24,6 +24,15 @@ public class HtmlUtil {
 		doc.select("nav,footer,script,noscript,style").remove();
 		doc.getElementsByAttribute("style").removeAttr("style");
 		doc.getElementsByAttributeValueContaining("class", "carousel").remove();
+		doc.getElementsByAttributeValueContaining("class", "promo").remove();
+		doc.getElementsByAttributeValueContaining("class", "header").remove();
+		doc.getElementsByAttributeValueContaining("class", "nav").remove();
+		
 		return doc;
+	}
+	
+	public static Document extractMainContent(Document doc) {
+		doc = (Document) doc.select("[id='content'],[class*='continut'],[class*='page']:not(:has([id='content'],[class*='continut'],[class*='page']))").first();
+		return sanitizeHtml(doc);
 	}
 }

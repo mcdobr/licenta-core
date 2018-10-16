@@ -68,6 +68,7 @@ public class Book {
 	}
 
 	private Book(Book persisted, Book addition) {
+		this();
 		Preconditions.checkNotNull(persisted);
 		Preconditions.checkNotNull(addition);
 		
@@ -77,7 +78,7 @@ public class Book {
 		
 		id = persisted.id;
 		title = (String)Normalizer.getNotNullIfPossible(persisted.title, addition.title);
-		//authors
+		authors = Normalizer.getLongestOfLists(persisted.authors, addition.authors);
 		isbn = (String)Normalizer.getNotNullIfPossible(persisted.isbn, addition.isbn);
 		description = Normalizer.getLongestOfNullableStrings(persisted.description, addition.description);
 		

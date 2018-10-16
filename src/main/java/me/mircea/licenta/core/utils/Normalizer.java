@@ -1,5 +1,7 @@
 package me.mircea.licenta.core.utils;
 
+import java.util.List;
+
 public class Normalizer {
 	private Normalizer() {	
 	}
@@ -16,5 +18,9 @@ public class Normalizer {
 		if (a == null && b == null)
 			return null;
 		return (a != null) ? a : b;
+	}
+	
+	public static <E> List<E> getLongestOfLists(final List<E> a, final List<E> b) {
+		return (a.size() >= b.size()) ? a : b;
 	}
 }
