@@ -31,8 +31,10 @@ public class HtmlUtil {
 		return doc;
 	}
 	
-	public static Document extractMainContent(Document doc) {
-		doc = (Document) doc.select("[id='content'],[class*='continut'],[class*='page']:not(:has([id='content'],[class*='continut'],[class*='page']))").first();
-		return sanitizeHtml(doc);
+	public static Element extractMainContent(Document doc) {
+		sanitizeHtml(doc);
+		
+		//TODO: fix this selector
+		return doc.select("[id='content'],[class*='continut'],[class*='page']:not(:has([id='content'],[class*='continut'],[class*='page']))").first();
 	}
 }

@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class CssUtil {
+	//TODO: convert to Filtering class?
 	private CssUtil() {
 	}
 	

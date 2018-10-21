@@ -3,13 +3,16 @@ package me.mircea.licenta.core.infoextraction;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -41,8 +44,7 @@ public class HeuristicalStrategy implements InformationExtractionStrategy, Wrapp
 	public static final Set<String> publisherWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 	public static final Set<String> descriptionWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 	
-	private WebWrapper webWrapper;
-	
+	//TODO: create dictionary class
 	static {
 		titleWordSet.add("titlu");
 		titleWordSet.add("title");
@@ -147,9 +149,9 @@ public class HeuristicalStrategy implements InformationExtractionStrategy, Wrapp
 	}
 
 	@Override
-	public String extractProductDescription(Document productPage) {
-		Preconditions.checkNotNull(productPage);
-		Element descriptionElement = productPage.select("[class*='descri']").first();
+	public String extractProductDescription(Document bookPage) {
+		Preconditions.checkNotNull(bookPage);
+		Element descriptionElement = bookPage.select("[class*='descri']").first();
 		return (descriptionElement != null) ? descriptionElement.text() : null;
 	}
 
@@ -160,23 +162,23 @@ public class HeuristicalStrategy implements InformationExtractionStrategy, Wrapp
 
 	/**
 	 * @brief Function that extracts the attribute of a product off of its page.
-	 * @param productPage
+	 * @param bookPage
 	 * @return An associative array of attributes.
 	 * @throws NullPointerException
 	 *             if the passed document is null.
 	 */
 
-	private Map<String, String> extractProductAttributes(Document productPage) {
-		Preconditions.checkNotNull(productPage);
+	private Map<String, String> extractProductAttributes(Document bookPage) {
+		Preconditions.checkNotNull(bookPage);
 		Map<String, String> productAttributes = new TreeMap<>();
 
-		Matcher isbnMatcher = isbnPattern.matcher(productPage.text());
+		Matcher isbnMatcher = isbnPattern.matcher(bookPage.text());
 		if (isbnMatcher.find()) {
 			String isbn = isbnMatcher.group();
 			logger.debug("Found isbn {}", isbn);
 
 			String findIsbnElement = String.format("*:contains(%s)", isbn);
-			Element isbnElement = productPage.select(findIsbnElement).last();
+			Element isbnElement = bookPage.select(findIsbnElement).last();
 
 			if (isbnElement.text().trim().equals(isbn))
 				isbnElement = isbnElement.parent();
@@ -195,16 +197,72 @@ public class HeuristicalStrategy implements InformationExtractionStrategy, Wrapp
 	}
 
 	@Override
-	public WebWrapper getWrapper() {
+	public WebWrapper getWrapper(Element bookPage) {
 		WebWrapper wrapper = new WebWrapper();
 		
+		String titleSelector = CssUtil.makeClassOrIdContains(titleWordSet);
+		Element titleElement = bookPage.select(titleSelector)
+				.select(String.format(":not(:has(%s))", titleSelector)).first();
+		if (titleElement != null)
+			wrapper.setTitleSelector(generateCssSelectorFor(new Elements(titleElement)));
+		
+		
+		String authorsSelector = CssUtil.makeClassOrIdContains(authorWordSet);
+		Element authorsElement = bookPage.select(authorsSelector).first();
+		if (authorsElement != null)
+			wrapper.setAuthorsSelector(generateCssSelectorFor(new Elements(authorsElement)));
+		
+		String priceSelector = CssUtil.makeClassOrIdContains(priceWordSet);
+		Element priceElement = bookPage.select(priceSelector).first();
+		if (priceElement != null)
+			wrapper.setPriceSelector(generateCssSelectorFor(new Elements(priceElement)));
+		
+		
+		String isbnSelector = ":matchesOwn((?=[-\\d\\ xX]{10,})\\d+[-\\ ]?\\d+[-\\ ]?\\d+[-\\ ]?\\d*[-\\ ]?[\\dxX])";
+		Element parent = bookPage.select(isbnSelector).first().parent();
+		
+		Elements attributeElements = parent.siblingElements();
+		attributeElements.add(parent);
+		wrapper.setAttributeSelector(generateCssSelectorFor(attributeElements));
+		
+		wrapper.setImageLinkSelector("img[alt]");
+		
+		String descriptionSelector = CssUtil.makeClassOrIdContains(descriptionWordSet);
+		Element descriptionElement = bookPage.select(descriptionSelector).first();
+		if (descriptionElement != null)
+			wrapper.setDescriptionSelector(generateCssSelectorFor(new Elements(descriptionElement)));
 		
 		return wrapper;
 	}
-
+	
+	
 	@Override
-	public String generateCssSelectorFor(Set<String> wordSet) {
-		// TODO Auto-generated method stub
-		return null;
+	public String generateCssSelectorFor(Elements elements) {
+		Preconditions.checkArgument(!elements.isEmpty());
+		
+		String selector = null;
+		if (elements.size() == 1) {
+			Element elem = elements.first();
+			
+			if (elem.hasAttr("id"))
+				selector = "#" + elem.id();
+			else if (elem.hasAttr("class"))
+				selector = "." + elem.className();
+		} else {
+			// Get the mode of class name
+			final Map<String, Long> classNameFrequencies = elements.stream().map(Element::className).
+				collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+			
+			final long maxFrequency = classNameFrequencies.values().stream().max(Long::compare).orElse(0L);
+			
+			final List<String> classModes = classNameFrequencies.entrySet().stream()
+						.filter(tuple -> tuple.getValue() == maxFrequency)
+						.map(Map.Entry::getKey)
+						.collect(Collectors.toList());
+			
+			selector = "." + classModes.get(0);
+		}
+		
+		return selector;
 	}
 }

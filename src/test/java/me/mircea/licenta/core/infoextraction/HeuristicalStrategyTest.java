@@ -1,8 +1,10 @@
 package me.mircea.licenta.core.infoextraction;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +17,7 @@ import org.jsoup.select.Elements;
 import org.junit.Test;
 
 import me.mircea.licenta.core.entities.Book;
+import me.mircea.licenta.core.entities.WebWrapper;
 import me.mircea.licenta.core.utils.HtmlUtil;
 
 public class HeuristicalStrategyTest {
@@ -66,5 +69,24 @@ public class HeuristicalStrategyTest {
 		Book book = extractionStrategy.extractBook(htmlElement, doc);
 		assertNotNull(book.getIsbn());
 		assertNotEquals(book.getIsbn().trim(), "");
+	}
+	
+	@Test
+	public void shouldCreateAnAppropriateWrapper() throws IOException {
+		String url = "https://carturesti.ro/carte/pedaland-prin-viata-181658144?p=2";
+		//String url = "https://www.libris.ro/naufragii-akira-yoshimura-HUM978-606-779-038-2--p1033264.html";
+		//String url = "http://www.librariilealexandria.ro/elita-din-umbra";
+		
+		
+		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect(url).get());
+		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
+		WebWrapper wrapper = strategy.getWrapper(mainContent);
+
+		System.out.println(wrapper.toString());
+		
+		assertEquals(".titluProdus", wrapper.getTitleSelector());
+		assertEquals(".autorProdus", wrapper.getAuthorsSelector());
+		assertEquals(".pret", wrapper.getPriceSelector());
+		assertEquals(".productAttr", wrapper.getAttributeSelector());
 	}
 }

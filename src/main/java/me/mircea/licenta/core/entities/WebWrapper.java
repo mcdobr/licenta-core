@@ -9,25 +9,39 @@ public class WebWrapper {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	private String titleSelector;
-	private String priceSelector;
 	private String authorsSelector;
+	private String priceSelector;
+	private String attributeSelector;
 	private String descriptionSelector;
 	private String imageLinkSelector;
-	private String paginationLinkSelector;
 
 	public WebWrapper() {
 	}
 
-	public WebWrapper(Integer id, String titleSelector, String priceSelector, String authorsSelector,
-			String descriptionSelector, String imageLinkSelector, String paginationLinkSelector) {
+	public WebWrapper(Integer id, String titleSelector, String authorsSelector, String priceSelector,
+			String attributeSelector, String descriptionSelector, String imageLinkSelector) {
 		super();
 		this.id = id;
 		this.titleSelector = titleSelector;
-		this.priceSelector = priceSelector;
 		this.authorsSelector = authorsSelector;
+		this.priceSelector = priceSelector;
+		this.attributeSelector = attributeSelector;
 		this.descriptionSelector = descriptionSelector;
 		this.imageLinkSelector = imageLinkSelector;
-		this.paginationLinkSelector = paginationLinkSelector;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("WebWrapper [id=").append(id);
+		builder.append(", titleSelector=").append(titleSelector);
+		builder.append(", authorsSelector=").append(authorsSelector);
+		builder.append(", priceSelector=").append(priceSelector);
+		builder.append(", attributeSelector=").append(attributeSelector);
+		builder.append(", descriptionSelector=").append(descriptionSelector);
+		builder.append(", imageLinkSelector=").append(imageLinkSelector);
+		builder.append("]");
+		return builder.toString();
 	}
 
 	public Integer getId() {
@@ -46,6 +60,14 @@ public class WebWrapper {
 		this.titleSelector = titleSelector;
 	}
 
+	public String getAuthorsSelector() {
+		return authorsSelector;
+	}
+
+	public void setAuthorsSelector(String authorsSelector) {
+		this.authorsSelector = authorsSelector;
+	}
+
 	public String getPriceSelector() {
 		return priceSelector;
 	}
@@ -54,12 +76,12 @@ public class WebWrapper {
 		this.priceSelector = priceSelector;
 	}
 
-	public String getAuthorsSelector() {
-		return authorsSelector;
+	public String getAttributeSelector() {
+		return attributeSelector;
 	}
 
-	public void setAuthorsSelector(String authorsSelector) {
-		this.authorsSelector = authorsSelector;
+	public void setAttributeSelector(String attributeSelector) {
+		this.attributeSelector = attributeSelector;
 	}
 
 	public String getDescriptionSelector() {
@@ -76,13 +98,5 @@ public class WebWrapper {
 
 	public void setImageLinkSelector(String imageLinkSelector) {
 		this.imageLinkSelector = imageLinkSelector;
-	}
-
-	public String getPaginationLinkSelector() {
-		return paginationLinkSelector;
-	}
-
-	public void setPaginationLinkSelector(String paginationLinkSelector) {
-		this.paginationLinkSelector = paginationLinkSelector;
 	}
 }
