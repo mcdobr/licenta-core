@@ -20,7 +20,7 @@ public class SemanticWebStrategyTest {
 	public void shouldExtractElementsFromDownloadedMultiPage() throws IOException {
 		Document doc = HtmlUtil.sanitizeHtml(Jsoup.connect("https://www.bookdepository.com/category/2630/Romance/browse/viewmode/all").get());
 		
-		Elements bookElements = extractionStrategy.extractBookHtmlElements(doc);
+		Elements bookElements = extractionStrategy.extractBookCards(doc);
 		assertNotNull(bookElements);
 		assertEquals(30, bookElements.size());
 	}
@@ -28,7 +28,7 @@ public class SemanticWebStrategyTest {
 	@Test
 	public void shoudlExtractAttributes() throws IOException {
 		Document doc = HtmlUtil.sanitizeHtml(Jsoup.connect("https://www.bookdepository.com/category/2630/Romance/browse/viewmode/all").get());
-		Element productElement = extractionStrategy.extractBookHtmlElements(doc).get(0);
+		Element productElement = extractionStrategy.extractBookCards(doc).get(0);
 		Book book = extractionStrategy.extractBook(productElement);
 		
 		assertNotNull(book);

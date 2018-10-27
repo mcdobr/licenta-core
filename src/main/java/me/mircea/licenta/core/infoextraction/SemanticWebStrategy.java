@@ -2,6 +2,7 @@ package me.mircea.licenta.core.infoextraction;
 
 import java.time.LocalDate;
 import java.util.Locale;
+import java.util.Map;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -16,7 +17,7 @@ import me.mircea.licenta.core.entities.Site;
 public class SemanticWebStrategy implements InformationExtractionStrategy {
 
 	@Override
-	public Elements extractBookHtmlElements(Document doc) {
+	public Elements extractBookCards(Document doc) {
 		Preconditions.checkNotNull(doc);
 		return doc.select("[itemtype$='Book'],[itemtype$='Book']");
 	}
@@ -65,9 +66,8 @@ public class SemanticWebStrategy implements InformationExtractionStrategy {
 	}
 
 	@Override
-	public boolean hasBooks(Document page) {
+	public Map<String, String> extractBookAttributes(Document bookPage) {
 		// TODO Auto-generated method stub
-		return false;
+		return null;
 	}
-
 }

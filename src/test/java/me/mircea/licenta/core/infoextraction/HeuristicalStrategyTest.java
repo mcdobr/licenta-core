@@ -35,7 +35,7 @@ public class HeuristicalStrategyTest {
 		Document doc = Jsoup.parse(inputFile, "UTF-8", "http://www.librariilealexandria.ro/carte");
 		
 		
-		Elements productElements = extractionStrategy.extractBookHtmlElements(doc);
+		Elements productElements = extractionStrategy.extractBookCards(doc);
 		assertNotNull(productElements);
 		assertTrue(2000 <= productElements.size());
 	}
@@ -76,7 +76,7 @@ public class HeuristicalStrategyTest {
 		String url = "https://carturesti.ro/carte/pedaland-prin-viata-181658144?p=2";
 		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect(url).get());
 		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
-		WebWrapper wrapper = strategy.getWrapper(mainContent);
+		WebWrapper wrapper = strategy.generateWrapper(mainContent);
 
 		System.out.println(wrapper.toString());
 		
@@ -91,7 +91,7 @@ public class HeuristicalStrategyTest {
 		String url = "https://www.libris.ro/naufragii-akira-yoshimura-HUM978-606-779-038-2--p1033264.html";
 		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect(url).get());
 		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
-		WebWrapper wrapper = strategy.getWrapper(mainContent);
+		WebWrapper wrapper = strategy.generateWrapper(mainContent);
 		
 		System.out.println(wrapper.toString());
 		assertEquals("#text_container>p", wrapper.getAttributeSelector());
@@ -102,7 +102,7 @@ public class HeuristicalStrategyTest {
 		String url = "http://www.librariilealexandria.ro/elita-din-umbra";
 		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect(url).get());
 		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
-		WebWrapper wrapper = strategy.getWrapper(mainContent);
+		WebWrapper wrapper = strategy.generateWrapper(mainContent);
 
 		System.out.println(wrapper.toString());
 		

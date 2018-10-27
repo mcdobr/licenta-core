@@ -11,9 +11,13 @@ import java.util.Currency;
 import java.util.Locale;
 import java.util.Optional;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class BookTest {
+	@Rule
+	public final ExpectedException exception = ExpectedException.none();
 	
 	@Test
 	public void shouldBeEqual() {
@@ -35,7 +39,7 @@ public class BookTest {
 		
 		assertEquals(book1, book2);
 	}
-	
+
 	@Test
 	public void shouldMergeForMostInformation() {
 		Book persisted = new Book(1, "Anna Karenina", "Limba de lemn", Arrays.asList("Lev Tolstoi"));

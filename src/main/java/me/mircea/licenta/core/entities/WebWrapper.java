@@ -14,6 +14,7 @@ public class WebWrapper {
 	private String attributeSelector;
 	private String descriptionSelector;
 	private String imageLinkSelector;
+	private String bookCardSelector;
 
 	public WebWrapper() {
 	}
@@ -40,6 +41,7 @@ public class WebWrapper {
 		builder.append(", attributeSelector=").append(attributeSelector);
 		builder.append(", descriptionSelector=").append(descriptionSelector);
 		builder.append(", imageLinkSelector=").append(imageLinkSelector);
+		builder.append(", bookCardSelector=").append(bookCardSelector);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -98,5 +100,13 @@ public class WebWrapper {
 
 	public void setImageLinkSelector(String imageLinkSelector) {
 		this.imageLinkSelector = imageLinkSelector;
+	}
+
+	public String getBookCardSelector() {
+		return bookCardSelector;
+	}
+
+	public void setBookCardSelector(String bookCardSelector) {
+		this.bookCardSelector = bookCardSelector;
 	}
 }
