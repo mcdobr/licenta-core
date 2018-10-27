@@ -16,7 +16,7 @@ import me.mircea.licenta.core.entities.Site;
 public class SemanticWebStrategy implements InformationExtractionStrategy {
 
 	@Override
-	public Elements extractProductHtmlElements(Document doc) {
+	public Elements extractBookHtmlElements(Document doc) {
 		Preconditions.checkNotNull(doc);
 		return doc.select("[itemtype$='Book'],[itemtype$='Book']");
 	}
@@ -59,13 +59,13 @@ public class SemanticWebStrategy implements InformationExtractionStrategy {
 	}
 
 	@Override
-	public String extractProductDescription(Document productPage) {
+	public String extractBookDescription(Document productPage) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public boolean hasProducts(Document page) {
+	public boolean hasBooks(Document page) {
 		// TODO Auto-generated method stub
 		return false;
 	}

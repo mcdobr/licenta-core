@@ -1,7 +1,15 @@
 package me.mircea.licenta.core.utils;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,6 +17,16 @@ import org.jsoup.nodes.Element;
 import com.google.common.net.InternetDomainName;
 
 public class HtmlUtil {
+	public static final Set<String> htmlTags = new HashSet<>();
+	static {
+		try {
+			String text = new String(Files.readAllBytes(Paths.get("/html_tags.csv")), StandardCharsets.UTF_8);
+			Arrays.asList(text.split(",")).stream().forEach(htmlTags::add);
+		} catch (IOException e) {
+			//TODO: logger
+		}
+	}
+	
 	private HtmlUtil() {
 	}
 

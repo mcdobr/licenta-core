@@ -22,7 +22,7 @@ public interface InformationExtractionStrategy {
 	 * @throws NullPointerException
 	 *             if the passed document is null.
 	 */
-	public Elements extractProductHtmlElements(Document doc);
+	public Elements extractBookHtmlElements(Document doc);
 
 	/**
 	 * @brief Extracts a product from the given html element.
@@ -47,11 +47,11 @@ public interface InformationExtractionStrategy {
 	 * @throws NullPointerException
 	 *             if the passed document is null.
 	 */
-	public String extractProductDescription(Document productPage);
+	public String extractBookDescription(Document productPage);
 
 	/**
 	 * @param page - a document to be analyzed.
 	 * @return
 	 */
-	public boolean hasProducts(Document page);
+	public boolean hasBooks(Document page);
 }

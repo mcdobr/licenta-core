@@ -14,6 +14,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.stat.Frequency;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -28,62 +29,16 @@ import me.mircea.licenta.core.entities.Site;
 import me.mircea.licenta.core.entities.WebWrapper;
 import me.mircea.licenta.core.utils.CssUtil;
 import me.mircea.licenta.core.utils.HtmlUtil;
+import me.mircea.licenta.core.utils.TextContentAnalyzer;
 
 public class HeuristicalStrategy implements InformationExtractionStrategy, WrapperGenerationStrategy {
 	private static final Logger logger = LoggerFactory.getLogger(HeuristicalStrategy.class);
 	private static final Pattern isbnPattern = Pattern.compile("(?=[-\\d\\ xX]{10,})\\d+[-\\ ]?\\d+[-\\ ]?\\d+[-\\ ]?\\d*[-\\ ]?[\\dxX]");
 	private static final String IMAGE_WITH_LINK_SELECTOR = "[class*='produ']:has(img):has(a)";
 	private static final String PRODUCT_SELECTOR = CssUtil.makeLeafOfSelector(IMAGE_WITH_LINK_SELECTOR);
-
-	public static final Set<String> titleWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-	public static final Set<String> authorWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-	public static final Set<String> priceWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-	public static final Set<String> codeWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-	public static final Map<String, String> formatsWordSet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	public static final Set<String> yearWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-	public static final Set<String> publisherWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-	public static final Set<String> descriptionWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-	
-	//TODO: create dictionary class
-	static {
-		titleWordSet.add("titlu");
-		titleWordSet.add("title");
-		titleWordSet.add("nume");
-		titleWordSet.add("name");
-		
-		authorWordSet.add("autor");
-		authorWordSet.add("autori");
-		authorWordSet.add("author");
-		authorWordSet.add("authors");
-
-		priceWordSet.add("pret");
-		priceWordSet.add("price");
-		
-		codeWordSet.add("isbn");
-		codeWordSet.add("cod");
-		
-		formatsWordSet.put("hardcover", "hardcover");
-		formatsWordSet.put("paperback", "paperback");
-		formatsWordSet.put("pdf", "pdf");
-		formatsWordSet.put("epub", "epub");
-		formatsWordSet.put("mobi", "mobi");
-	
-		formatsWordSet.put("cartonata", "hardcover");
-		formatsWordSet.put("necartonata", "paperback");
-		
-		yearWordSet.add("an");
-		yearWordSet.add("anul");
-		yearWordSet.add("year");
-		
-		publisherWordSet.add("publisher");
-		publisherWordSet.add("editura");
-		
-		descriptionWordSet.add("descriere");
-		descriptionWordSet.add("description");
-	}
 	
 	@Override
-	public Elements extractProductHtmlElements(Document doc) {
+	public Elements extractBookHtmlElements(Document doc) {
 		Preconditions.checkNotNull(doc);
 		return doc.select(PRODUCT_SELECTOR);
 	}
@@ -93,7 +48,7 @@ public class HeuristicalStrategy implements InformationExtractionStrategy, Wrapp
 		Preconditions.checkNotNull(htmlElement);
 
 		Book book = new Book();
-		String title = htmlElement.select(CssUtil.makeClassOrIdContains(titleWordSet)).first().text();
+		String title = htmlElement.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.titleWordSet)).first().text();
 		book.setTitle(title);
 		
 		String imageUrl = htmlElement.select("img[src]").first().absUrl("src");
@@ -105,30 +60,28 @@ public class HeuristicalStrategy implements InformationExtractionStrategy, Wrapp
 			logger.debug("AttributesMap is empty on {}", bookPage.location());
 
 		
-		String authorSeparatorsRegex = "[,&]\\s*";
-		Element authorElement = bookPage.select(CssUtil.makeClassOrIdContains(authorWordSet)).first();
+		Element authorElement = bookPage.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.authorWordSet)).first();
 		if (authorElement != null) {
-			book.setAuthors(Arrays.asList(authorElement.text().split(authorSeparatorsRegex)));
+			book.setAuthors(Arrays.asList(authorElement.text().split(TextContentAnalyzer.authorSeparatorsRegex)));
 		} else {
 			productAttributes.keySet().stream()
-				.filter(authorWordSet::contains)
-				.findFirst().ifPresent(authorTag -> 
-				book.setAuthors(Arrays.asList(productAttributes.get(authorTag).split(authorSeparatorsRegex))));
+				.filter(TextContentAnalyzer.authorWordSet::contains)
+				.findFirst().ifPresent(authorTag -> book.setAuthors(Arrays.asList(productAttributes.get(authorTag).split(TextContentAnalyzer.authorSeparatorsRegex))));
 		}
 		
-		productAttributes.keySet().stream().filter(codeWordSet::contains).findFirst()
+		productAttributes.keySet().stream().filter(TextContentAnalyzer.codeWordSet::contains).findFirst()
 			.ifPresent(key -> book.setIsbn(productAttributes.get(key).replaceAll("^[ a-zA-Z]*", "")));
 		
-		productAttributes.values().stream().filter(formatsWordSet::containsKey)
-			.findFirst().ifPresent(format -> book.setFormat(formatsWordSet.get(format)));
+		productAttributes.values().stream().filter(TextContentAnalyzer.formatsWordSet::containsKey)
+			.findFirst().ifPresent(format -> book.setFormat(TextContentAnalyzer.formatsWordSet.get(format)));
 		
-		productAttributes.keySet().stream().filter(yearWordSet::contains)
+		productAttributes.keySet().stream().filter(TextContentAnalyzer.yearWordSet::contains)
 			.findFirst().ifPresent(key -> book.setReleaseYear(Integer.parseInt(productAttributes.get(key))));
 		
-		productAttributes.keySet().stream().filter(publisherWordSet::contains)
+		productAttributes.keySet().stream().filter(TextContentAnalyzer.publisherWordSet::contains)
 			.findFirst().ifPresent(key -> book.setPublishingHouse(productAttributes.get(key)));
 		
-		book.setDescription(this.extractProductDescription(bookPage));
+		book.setDescription(this.extractBookDescription(bookPage));
 
 		return book;
 	}
@@ -136,7 +89,7 @@ public class HeuristicalStrategy implements InformationExtractionStrategy, Wrapp
 	@Override
 	public PricePoint extractPricePoint(Element htmlElement, Locale locale, LocalDate retrievedDay, Site site) {
 		Preconditions.checkNotNull(htmlElement);
-		String price = htmlElement.select(CssUtil.makeClassOrIdContains(priceWordSet)).text();
+		String price = htmlElement.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.priceWordSet)).text();
 
 		PricePoint pricePoint = null;
 		try {
@@ -149,15 +102,15 @@ public class HeuristicalStrategy implements InformationExtractionStrategy, Wrapp
 	}
 
 	@Override
-	public String extractProductDescription(Document bookPage) {
+	public String extractBookDescription(Document bookPage) {
 		Preconditions.checkNotNull(bookPage);
 		Element descriptionElement = bookPage.select("[class*='descri']").first();
 		return (descriptionElement != null) ? descriptionElement.text() : null;
 	}
 
 	@Override
-	public boolean hasProducts(Document page) {
-		return !extractProductHtmlElements(page).isEmpty();
+	public boolean hasBooks(Document page) {
+		return !extractBookHtmlElements(page).isEmpty();
 	}
 
 	/**
@@ -200,34 +153,44 @@ public class HeuristicalStrategy implements InformationExtractionStrategy, Wrapp
 	public WebWrapper getWrapper(Element bookPage) {
 		WebWrapper wrapper = new WebWrapper();
 		
-		String titleSelector = CssUtil.makeClassOrIdContains(titleWordSet);
+		String titleSelector = CssUtil.makeClassOrIdContains(TextContentAnalyzer.titleWordSet);
 		Element titleElement = bookPage.select(titleSelector)
 				.select(String.format(":not(:has(%s))", titleSelector)).first();
 		if (titleElement != null)
 			wrapper.setTitleSelector(generateCssSelectorFor(new Elements(titleElement)));
 		
 		
-		String authorsSelector = CssUtil.makeClassOrIdContains(authorWordSet);
+		String authorsSelector = CssUtil.makeClassOrIdContains(TextContentAnalyzer.authorWordSet);
 		Element authorsElement = bookPage.select(authorsSelector).first();
 		if (authorsElement != null)
 			wrapper.setAuthorsSelector(generateCssSelectorFor(new Elements(authorsElement)));
 		
-		String priceSelector = CssUtil.makeClassOrIdContains(priceWordSet);
+		String priceSelector = CssUtil.makeClassOrIdContains(TextContentAnalyzer.priceWordSet);
 		Element priceElement = bookPage.select(priceSelector).first();
 		if (priceElement != null)
 			wrapper.setPriceSelector(generateCssSelectorFor(new Elements(priceElement)));
 		
 		
 		String isbnSelector = ":matchesOwn((?=[-\\d\\ xX]{10,})\\d+[-\\ ]?\\d+[-\\ ]?\\d+[-\\ ]?\\d*[-\\ ]?[\\dxX])";
-		Element parent = bookPage.select(isbnSelector).first().parent();
+		Element isbnElement = bookPage.select(isbnSelector).first();
+		Element parent = isbnElement.parent();
 		
-		Elements attributeElements = parent.siblingElements();
-		attributeElements.add(parent);
+		//TODO: refine this: If the book code element has no class then those are probably the whole thing
+		Elements attributeElements = null;
+		if (isbnElement.className().isEmpty()) {
+			attributeElements = isbnElement.siblingElements();
+			attributeElements.add(isbnElement);
+		}
+		else {
+			attributeElements = parent.siblingElements();
+			attributeElements.add(parent);
+		}
+
+		
 		wrapper.setAttributeSelector(generateCssSelectorFor(attributeElements));
-		
 		wrapper.setImageLinkSelector("img[alt]");
 		
-		String descriptionSelector = CssUtil.makeClassOrIdContains(descriptionWordSet);
+		String descriptionSelector = CssUtil.makeClassOrIdContains(TextContentAnalyzer.descriptionWordSet);
 		Element descriptionElement = bookPage.select(descriptionSelector).first();
 		if (descriptionElement != null)
 			wrapper.setDescriptionSelector(generateCssSelectorFor(new Elements(descriptionElement)));
@@ -244,23 +207,46 @@ public class HeuristicalStrategy implements InformationExtractionStrategy, Wrapp
 		if (elements.size() == 1) {
 			Element elem = elements.first();
 			
-			if (elem.hasAttr("id"))
+			if (!elem.id().isEmpty())
 				selector = "#" + elem.id();
-			else if (elem.hasAttr("class"))
-				selector = "." + elem.className();
+			else if (!elem.className().isEmpty())
+				selector = "." + String.join(".", elem.classNames());
+			else 
+				selector = generateCssSelectorFor(new Elements(elem.parent())) + ">" + elem.tagName();
 		} else {
 			// Get the mode of class name
 			final Map<String, Long> classNameFrequencies = elements.stream().map(Element::className).
 				collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-			
 			final long maxFrequency = classNameFrequencies.values().stream().max(Long::compare).orElse(0L);
-			
 			final List<String> classModes = classNameFrequencies.entrySet().stream()
 						.filter(tuple -> tuple.getValue() == maxFrequency)
 						.map(Map.Entry::getKey)
 						.collect(Collectors.toList());
 			
-			selector = "." + classModes.get(0);
+			if (!classModes.get(0).isEmpty()) {
+				selector = "." + classModes.get(0);
+			} else {
+				//TODO: get mode of tag name
+				final Map<String, Long> tagNameFrequencies = elements.stream().map(Element::tagName)
+						.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+				final long maxTagFrequency = tagNameFrequencies.values().stream().max(Long::compare).orElse(0L);
+				final List<String> tagModes = tagNameFrequencies.entrySet().stream()
+							.filter(tuple -> tuple.getValue() == maxTagFrequency)
+							.map(Map.Entry::getKey)
+							.collect(Collectors.toList());
+				String tag = tagModes.get(0);
+				
+				System.out.println(tagNameFrequencies);
+				
+				// TODO: handle case when not all are the same
+				// TODO: handle case when tag is not unique to the site
+				// Also this is probably breakable
+				Element parent = elements.first().parent();
+				if (!parent.id().isEmpty())
+					selector = generateCssSelectorFor(new Elements(parent)) + ">" + tag;
+				else
+					selector = generateCssSelectorFor(new Elements(parent));
+			}
 		}
 		
 		return selector;

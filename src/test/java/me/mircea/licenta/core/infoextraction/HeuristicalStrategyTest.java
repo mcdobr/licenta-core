@@ -35,7 +35,7 @@ public class HeuristicalStrategyTest {
 		Document doc = Jsoup.parse(inputFile, "UTF-8", "http://www.librariilealexandria.ro/carte");
 		
 		
-		Elements productElements = extractionStrategy.extractProductHtmlElements(doc);
+		Elements productElements = extractionStrategy.extractBookHtmlElements(doc);
 		assertNotNull(productElements);
 		assertTrue(2000 <= productElements.size());
 	}
@@ -72,12 +72,8 @@ public class HeuristicalStrategyTest {
 	}
 	
 	@Test
-	public void shouldCreateAnAppropriateWrapper() throws IOException {
+	public void shouldCreateAppropriateWrapperOnCarturesti() throws IOException {
 		String url = "https://carturesti.ro/carte/pedaland-prin-viata-181658144?p=2";
-		//String url = "https://www.libris.ro/naufragii-akira-yoshimura-HUM978-606-779-038-2--p1033264.html";
-		//String url = "http://www.librariilealexandria.ro/elita-din-umbra";
-		
-		
 		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect(url).get());
 		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
 		WebWrapper wrapper = strategy.getWrapper(mainContent);
@@ -88,5 +84,29 @@ public class HeuristicalStrategyTest {
 		assertEquals(".autorProdus", wrapper.getAuthorsSelector());
 		assertEquals(".pret", wrapper.getPriceSelector());
 		assertEquals(".productAttr", wrapper.getAttributeSelector());
+	}
+	
+	@Test
+	public void shouldCreateAppropriateWrapperOnLibris() throws IOException {
+		String url = "https://www.libris.ro/naufragii-akira-yoshimura-HUM978-606-779-038-2--p1033264.html";
+		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect(url).get());
+		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
+		WebWrapper wrapper = strategy.getWrapper(mainContent);
+		
+		System.out.println(wrapper.toString());
+		assertEquals("#text_container>p", wrapper.getAttributeSelector());
+	}
+	
+	@Test
+	public void shouldCreateAppropriateWrapperOnAlexandria() throws IOException {
+		String url = "http://www.librariilealexandria.ro/elita-din-umbra";
+		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect(url).get());
+		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
+		WebWrapper wrapper = strategy.getWrapper(mainContent);
+
+		System.out.println(wrapper.toString());
+		
+		//TODO: finish this test
+		fail();
 	}
 }
