@@ -16,7 +16,12 @@ public class Site {
 	private Integer id;
 	private String name;
 	private String url;
-
+	
+	@OneToOne
+	//TODO: add wrapper to toString, constructors, hashcode etc?
+	private WebWrapper wrapper;
+	
+	
 	public Site() {
 	}
 
@@ -57,6 +62,14 @@ public class Site {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+
+	public WebWrapper getWrapper() {
+		return wrapper;
+	}
+
+	public void setWrapper(WebWrapper wrapper) {
+		this.wrapper = wrapper;
 	}
 
 	/**

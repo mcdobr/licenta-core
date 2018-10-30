@@ -23,9 +23,9 @@ import me.mircea.licenta.core.entities.WebWrapper;
 
 public class WrapperStrategy implements InformationExtractionStrategy {
 	private static final Logger logger = LoggerFactory.getLogger(WrapperStrategy.class);
-	
+
 	private WebWrapper wrapper;
-	
+
 	public WrapperStrategy(WebWrapper wrapper) {
 		super();
 		this.wrapper = wrapper;
@@ -39,18 +39,25 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 	@Override
 	public Book extractBook(Element htmlElement, Document bookPage) {
 		Preconditions.checkNotNull(bookPage);
-		
+
 		Book book = new Book();
-		book.setTitle(bookPage.selectFirst(wrapper.getTitleSelector()).text());
-		
-		Map<String, String> attributes = extractBookAttributes(bookPage);
-		
-		List<String> authors = Arrays.asList(bookPage.selectFirst(wrapper.getAuthorsSelector()).text().split("[,&]"));
-		book.setAuthors(authors);
-		
-		//TODO: finish this
-		book.setDescription(bookPage.selectFirst(wrapper.getDescriptionSelector()).text());
-		
+		if (wrapper.getTitleSelector() != null)
+			book.setTitle(bookPage.selectFirst(wrapper.getTitleSelector()).text());
+
+		if (wrapper.getAttributeSelector() != null) {
+			Map<String, String> attributes = extractBookAttributes(bookPage);
+			// TODO: handle attributes
+		}
+
+		if (wrapper.getAuthorsSelector() != null) {
+			List<String> authors = Arrays
+					.asList(bookPage.selectFirst(wrapper.getAuthorsSelector()).text().split("[,&]"));
+			book.setAuthors(authors);
+		}
+
+		if (wrapper.getDescriptionSelector() != null)
+			book.setDescription(bookPage.selectFirst(wrapper.getDescriptionSelector()).text());
+
 		return book;
 	}
 
@@ -76,13 +83,13 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 	public Map<String, String> extractBookAttributes(Document bookPage) {
 		Elements specs = bookPage.select(wrapper.getAttributeSelector());
 		Map<String, String> attributes = new TreeMap<>();
-		
+
 		for (Element spec : specs) {
 			String[] keyValuePair = spec.text().split(":", 2);
 			if (keyValuePair.length > 1)
 				attributes.put(keyValuePair[0].trim(), keyValuePair[1].trim());
 		}
-		
+
 		return attributes;
 	}
 }

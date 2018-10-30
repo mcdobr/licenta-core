@@ -24,7 +24,7 @@ import me.mircea.licenta.core.entities.WebWrapper;
 import me.mircea.licenta.core.utils.HtmlUtil;
 
 public class WrapperStrategyTest {
-	
+
 	@Test
 	public void shouldGetBookCards() throws IOException {
 		Element singlePageContent = HtmlUtil.extractMainContent(Jsoup.connect(
@@ -45,40 +45,45 @@ public class WrapperStrategyTest {
 		assertTrue(40 <= bookCards.size());
 		System.out.println(wrapper.toString());
 	}
-	
+
 	@Test
 	public void shouldExtractProduct() throws IOException {
-		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect("https://carturesti.ro/carte/inima-omului-171704655?p=3").get());
+		Element mainContent = HtmlUtil
+				.extractMainContent(Jsoup.connect("https://carturesti.ro/carte/inima-omului-171704655?p=3").get());
 		WrapperGenerationStrategy donor = new HeuristicalStrategy();
-		
+
 		WebWrapper wrapper = donor.generateWrapper(mainContent);
 		InformationExtractionStrategy strategy = new WrapperStrategy(wrapper);
-		
-		//TODO: fix your damn interface
+
+		// TODO: fix your damn interface
 		Document dummyDoc = Jsoup.parseBodyFragment(mainContent.outerHtml());
-		
+
 		Book extractedBook = strategy.extractBook(null, dummyDoc);
 		assertEquals("Inima omului", extractedBook.getTitle());
-		
+
 		Map<String, String> attributes = strategy.extractBookAttributes(dummyDoc);
 		assertFalse(attributes.isEmpty());
-		
+
 		List<String> expectedAuthors = Arrays.asList("Jon Kalman Stefansson");
 		assertEquals(expectedAuthors, extractedBook.getAuthors());
-		
+
 		assertFalse(extractedBook.getDescription().isEmpty());
 		System.out.println(extractedBook.toString());
 	}
-	
+
 	@Test
 	public void shouldExtractPrice() throws IOException {
-		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect("https://carturesti.ro/carte/inima-omului-171704655?p=3").get());
+		Element mainContent = HtmlUtil
+				.extractMainContent(Jsoup.connect("https://carturesti.ro/carte/inima-omului-171704655?p=3").get());
 		WrapperGenerationStrategy donor = new HeuristicalStrategy();
-		
+
 		WebWrapper wrapper = donor.generateWrapper(mainContent);
 		InformationExtractionStrategy strategy = new WrapperStrategy(wrapper);
-		
-		PricePoint price = strategy.extractPricePoint(mainContent, Locale.forLanguageTag("ro-ro"), LocalDate.now(), null);
+
+		PricePoint price = strategy.extractPricePoint(mainContent, Locale.forLanguageTag("ro-ro"), LocalDate.now(),
+				null);
 		assertEquals(35.96, price.getNominalValue().doubleValue(), 1e-5);
+
+		// TODO: make it so that it extracts off of alexandria
 	}
 }
