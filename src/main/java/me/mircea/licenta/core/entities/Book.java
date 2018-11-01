@@ -4,27 +4,41 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.HashSet;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import java.util.HashSet;
 
 import org.hibernate.annotations.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
 
 import me.mircea.licenta.core.utils.Normalizer;
 
 @Entity
+@javax.persistence.Entity
 @Table(name = "books")
 public class Book {
 	private static final Logger logger = LoggerFactory.getLogger(Book.class);
 	
 	@Id
+	@javax.persistence.Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private Long id;
 
+	@Index
 	@Column(nullable = false)
 	private String title;
 
@@ -56,7 +70,7 @@ public class Book {
 		this.pricepoints = new HashSet<>();
 	}
 
-	public Book(Integer id, String title, String description, List<String> authors) {
+	public Book(Long id, String title, String description, List<String> authors) {
 		super();
 
 		Preconditions.checkNotNull(authors);
@@ -109,155 +123,86 @@ public class Book {
 		return Optional.ofNullable(merged);
 	}
 	
-	/**
-	 * @return the id
-	 */
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
-	/**
-	 * @return the title
-	 */
 	public String getTitle() {
 		return title;
 	}
 
-	/**
-	 * @param title the title to set
-	 */
 	public void setTitle(String title) {
 		this.title = title;
 	}
 
-	/**
-	 * @return the authors
-	 */
 	public List<String> getAuthors() {
 		return authors;
 	}
 
-	/**
-	 * @param authors the authors to set
-	 */
 	public void setAuthors(List<String> authors) {
 		this.authors = authors;
 	}
 
-	/**
-	 * @return the isbn
-	 */
 	public String getIsbn() {
 		return isbn;
 	}
 
-	/**
-	 * @param isbn
-	 *            the isbn to set
-	 */
 	public void setIsbn(String isbn) {
 		this.isbn = isbn.replaceAll("[-\\ ]", "");
 	}
 
-	/**
-	 * @return the description
-	 */
 	public String getDescription() {
 		return description;
 	}
 
-	/**
-	 * @param description
-	 *            the description to set
-	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-	/**
-	 * @return the pricepoints
-	 */
 	public Set<PricePoint> getPricepoints() {
 		return pricepoints;
 	}
 
-	/**
-	 * @param pricepoints
-	 *            the pricepoints to set
-	 */
 	public void setPricepoints(Set<PricePoint> pricepoints) {
 		this.pricepoints = pricepoints;
 	}
 
-	/**
-	 * @return the publishingHouse
-	 */
 	public String getPublishingHouse() {
 		return publishingHouse;
 	}
 
-	/**
-	 * @param publishingHouse
-	 *            the publishingHouse to set
-	 */
 	public void setPublishingHouse(String publishingHouse) {
 		this.publishingHouse = publishingHouse;
 	}
 
-	/**
-	 * @return the releaseYear
-	 */
 	public Integer getReleaseYear() {
 		return releaseYear;
 	}
 
-	/**
-	 * @param releaseYear
-	 *            the releaseYear to set
-	 */
 	public void setReleaseYear(Integer releaseYear) {
 		this.releaseYear = releaseYear;
 	}
 
-	/**
-	 * @return the format
-	 */
 	public String getFormat() {
 		return format;
 	}
 
-	/**
-	 * @param format the format to set
-	 */
 	public void setFormat(String format) {
 		this.format = format;
 	}
 
-	/**
-	 * @return the coverUrl
-	 */
 	public String getCoverUrl() {
 		return coverUrl;
 	}
 
-	/**
-	 * @param coverUrl - the coverUrl to set
-	 */
 	public void setCoverUrl(String coverUrl) {
 		this.coverUrl = coverUrl;
 	}
 
-	/**
-	 * (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -275,9 +220,6 @@ public class Book {
 		return builder.toString();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -295,9 +237,6 @@ public class Book {
 		return result;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj) {
@@ -382,5 +321,4 @@ public class Book {
 		}
 		return true;
 	}
-	
 }

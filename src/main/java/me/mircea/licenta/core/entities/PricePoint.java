@@ -9,16 +9,22 @@ import java.time.LocalDate;
 import java.util.Currency;
 import java.util.Locale;
 
-import javax.persistence.*;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import com.google.common.base.Preconditions;
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Id;
 
 @Entity
+@javax.persistence.Entity
 @Table(name = "pricepoints")
 public class PricePoint {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private Long id;
 
 	private BigDecimal nominalValue;
 	private Currency currency;
@@ -32,7 +38,7 @@ public class PricePoint {
 		retrievedDay = LocalDate.now();
 	}
 
-	public PricePoint(Integer id, BigDecimal nominalValue, Currency currency, LocalDate retrievedDay, String url, Site site) {
+	public PricePoint(Long id, BigDecimal nominalValue, Currency currency, LocalDate retrievedDay, String url, Site site) {
 		super();
 		Preconditions.checkNotNull(retrievedDay);
 		
@@ -48,11 +54,11 @@ public class PricePoint {
 		this(null, nominalValue, currency, retrievedDay, url, site);
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

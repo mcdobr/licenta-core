@@ -20,11 +20,11 @@ public class PricePointTest {
 		Currency ron2 = Currency.getInstance(Locale.forLanguageTag("ro-ro"));
 		assertEquals(ron, ron2);
 		
-		PricePoint p1 = new PricePoint(1, BigDecimal.valueOf(20.05), ron, LocalDate.now(), null, null);
-		PricePoint p2 = new PricePoint(2, BigDecimal.valueOf(20.05), ron, LocalDate.now(), null, null);
+		PricePoint p1 = new PricePoint(1L, BigDecimal.valueOf(20.05), ron, LocalDate.now(), null, null);
+		PricePoint p2 = new PricePoint(2L, BigDecimal.valueOf(20.05), ron, LocalDate.now(), null, null);
 		assertEquals(p1, p2);
 		
-		PricePoint p3 = new PricePoint(2, BigDecimal.valueOf(20.05), ron, LocalDate.now().plusDays(1), null, null);
+		PricePoint p3 = new PricePoint(2L, BigDecimal.valueOf(20.05), ron, LocalDate.now().plusDays(1), null, null);
 		assertNotEquals(p1, p3);
 	}
 	

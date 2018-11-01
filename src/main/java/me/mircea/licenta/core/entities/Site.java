@@ -2,18 +2,25 @@ package me.mircea.licenta.core.entities;
 
 import java.net.MalformedURLException;
 
-import javax.persistence.*;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 import com.google.common.base.Preconditions;
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Id;
 
 import me.mircea.licenta.core.utils.HtmlUtil;
 
 @Entity
+@javax.persistence.Entity
 @Table(name = "sites")
 public class Site {
 	@Id
+	@javax.persistence.Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private Long id;
 	private String name;
 	private String url;
 	
@@ -25,7 +32,7 @@ public class Site {
 	public Site() {
 	}
 
-	public Site(Integer id, String name, String url) {
+	public Site(Long id, String name, String url) {
 		super();
 		
 		Preconditions.checkNotNull(name);
@@ -40,11 +47,11 @@ public class Site {
 		this(null, HtmlUtil.getDomainOfUrl(url), url);
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

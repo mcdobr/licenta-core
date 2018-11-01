@@ -31,8 +31,8 @@ public class BookTest {
 		
 		assertEquals(book1, book2);
 		
-		PricePoint price1 = new PricePoint(1, BigDecimal.valueOf(20.00), null, LocalDate.now(), null, null);
-		PricePoint price2 = new PricePoint(1, BigDecimal.valueOf(20.00), null, LocalDate.now(), null, null);
+		PricePoint price1 = new PricePoint(1L, BigDecimal.valueOf(20.00), null, LocalDate.now(), null, null);
+		PricePoint price2 = new PricePoint(1L, BigDecimal.valueOf(20.00), null, LocalDate.now(), null, null);
 		
 		book1.getPricepoints().add(price1);
 		book2.getPricepoints().add(price2);
@@ -42,7 +42,7 @@ public class BookTest {
 
 	@Test
 	public void shouldMergeForMostInformation() {
-		Book persisted = new Book(1, "Anna Karenina", "Limba de lemn", Arrays.asList("Lev Tolstoi"));
+		Book persisted = new Book(1L, "Anna Karenina", "Limba de lemn", Arrays.asList("Lev Tolstoi"));
 		Book addition = new Book(null, "Anna Karenina", "Si mai multa limba de lemn", Arrays.asList("Lev Tolstoi"));
 	
 		Optional<Book> mergeOperation = Book.merge(persisted, addition);
@@ -64,10 +64,10 @@ public class BookTest {
 	
 	@Test
 	public void shouldHaveOnlyOnePricepointPerSiteDay() {
-		Book persisted = new Book(1, "Anna Karenina", "Limba de lemn", Arrays.asList("Lev Tolstoi"));
+		Book persisted = new Book(1L, "Anna Karenina", "Limba de lemn", Arrays.asList("Lev Tolstoi"));
 		Book addition = new Book(null, "Anna Karenina", "Si mai multa limba de lemn", Arrays.asList("Lev Tolstoi"));
 		
-		Site site = new Site(1, "alexa", "https://someurl.com");
+		Site site = new Site(1L, "alexa", "https://someurl.com");
 		
 		final Currency ron = Currency.getInstance(Locale.forLanguageTag("ro-ro"));
 		PricePoint p1 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now(), null, site);
