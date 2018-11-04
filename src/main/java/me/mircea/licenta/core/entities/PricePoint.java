@@ -1,57 +1,60 @@
 package me.mircea.licenta.core.entities;
 
 import java.math.BigDecimal;
+import java.net.MalformedURLException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Currency;
+import java.util.Date;
 import java.util.Locale;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 import com.google.common.base.Preconditions;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
+import com.googlecode.objectify.annotation.Stringify;
+
+import me.mircea.licenta.core.utils.HtmlUtil;
 
 @Entity
-@javax.persistence.Entity
-@Table(name = "pricepoints")
 public class PricePoint {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
 	private BigDecimal nominalValue;
-	private Currency currency;
-	private LocalDate retrievedDay;
-	private String url;
 	
-	@ManyToOne
-	private Site site;
+	//@Stringify(CurrencyStringifier.class)
+	private Currency currency;
+	//@Stringify(InstantStringifier.class)
+	@Index private Instant retrievedTime;
+	private String url;
+	@Index
+	private String site;
 
+	public Key<Book> book;
+	
 	public PricePoint() {
-		retrievedDay = LocalDate.now();
+		retrievedTime = Instant.now();
 	}
 
-	public PricePoint(Long id, BigDecimal nominalValue, Currency currency, LocalDate retrievedDay, String url, Site site) {
+	public PricePoint(Long id, BigDecimal nominalValue, Currency currency, Instant retrievedTime, String url) throws MalformedURLException {
 		super();
-		Preconditions.checkNotNull(retrievedDay);
-		
+		Preconditions.checkNotNull(retrievedTime);
+		Preconditions.checkNotNull(url);
 		this.id = id;
 		this.nominalValue = nominalValue;
 		this.currency = currency;
-		this.retrievedDay = retrievedDay;
+		this.retrievedTime = retrievedTime;
 		this.url = url;
-		this.site = site;
+		this.site = HtmlUtil.getDomainOfUrl(url);
 	}
 	
-	public PricePoint(BigDecimal nominalValue, Currency currency, LocalDate retrievedDay, String url, Site site) {
-		this(null, nominalValue, currency, retrievedDay, url, site);
+	public PricePoint(BigDecimal nominalValue, Currency currency, Instant retrievedTime, String url) throws MalformedURLException {
+		this(null, nominalValue, currency, retrievedTime, url);
 	}
 
 	public Long getId() {
@@ -78,12 +81,12 @@ public class PricePoint {
 		this.currency = currency;
 	}
 
-	public LocalDate getRetrievedDay() {
-		return retrievedDay;
+	public Instant getRetrievedTime() {
+		return retrievedTime;
 	}
 
-	public void setRetrievedDay(LocalDate retrievedDay) {
-		this.retrievedDay = retrievedDay;
+	public void setRetrievedTime(Instant retrievedTime) {
+		this.retrievedTime = retrievedTime;
 	}
 	
 	public String getUrl() {
@@ -94,21 +97,13 @@ public class PricePoint {
 		this.url = url;
 	}
 
-	public Site getSite() {
-		return site;
-	}
-
-	public void setSite(Site site) {
-		this.site = site;
-	}
-
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("PricePoint [id=").append(id);
 		builder.append(", nominalValue=").append(nominalValue);
 		builder.append(", currency=").append(currency);
-		builder.append(", retrievedDay=").append(retrievedDay);
+		builder.append(", retrievedTime=").append(retrievedTime);
 		builder.append(", url=").append(url);
 		builder.append(", site=").append(site);
 		builder.append("]");
@@ -121,7 +116,7 @@ public class PricePoint {
 		int result = 1;
 		result = prime * result + ((currency == null) ? 0 : currency.hashCode());
 		result = prime * result + ((nominalValue == null) ? 0 : nominalValue.hashCode());
-		result = prime * result + ((retrievedDay == null) ? 0 : retrievedDay.hashCode());
+		result = prime * result + ((retrievedTime == null) ? 0 : retrievedTime.hashCode());
 		result = prime * result + ((url == null) ? 0 : url.hashCode());
 		result = prime * result + ((site == null) ? 0 : site.hashCode());
 		return result;
@@ -149,22 +144,16 @@ public class PricePoint {
 		} else if (!nominalValue.equals(other.nominalValue))
 			return false;
 		
-		if (retrievedDay == null) {
-			if (other.retrievedDay != null)
+		if (retrievedTime == null) {
+			if (other.retrievedTime != null)
 				return false;
-		} else if (!retrievedDay.equals(other.retrievedDay))
+		} else if (!retrievedTime.equals(other.retrievedTime))
 			return false;
 		
 		if (url == null) {
 			if (other.url != null)
 				return false;
 		} else if (!url.equals(other.url))
-			return false;
-		
-		if (site == null) {
-			if (other.site != null)
-				return false;
-		} else if (!site.equals(other.site))
 			return false;
 		return true;
 	}
@@ -181,14 +170,15 @@ public class PricePoint {
 	 *            The string representation of a price tag.
 	 * @param locale
 	 *            The locale considered for extracting the price tag.
-	 * @param retrievedDay
+	 * @param retrievedTime
 	 *            The day when the price was read.
 	 * @param site
 	 * @return A pricepoint extracted from the string.
 	 * @throws ParseException
 	 *             if the String is not formatted according to the locale.
+	 * @throws MalformedURLException 
 	 */
-	public static PricePoint valueOf(String price, final Locale locale, LocalDate retrievedDay, String url, Site site) throws ParseException {
+	public static PricePoint valueOf(String price, final Locale locale, Instant retrievedTime, String url) throws ParseException, MalformedURLException {
 		price = normalizeStringWithLocale(price, locale);
 		
 		final NumberFormat noFormat = NumberFormat.getNumberInstance(locale);
@@ -200,7 +190,7 @@ public class PricePoint {
 		if (!price.matches(".*[.,].*") && nominalValue.stripTrailingZeros().scale() <= 0 && nominalValue.compareTo(BigDecimal.valueOf(100)) >= 1)
 			nominalValue = nominalValue.divide(BigDecimal.valueOf(100));
 
-		return new PricePoint(null, nominalValue, Currency.getInstance(locale), retrievedDay, url, site);
+		return new PricePoint(null, nominalValue, Currency.getInstance(locale), retrievedTime, url);
 	}
 
 	/**

@@ -1,13 +1,17 @@
 package me.mircea.licenta.core.entities;
 
-import javax.persistence.*;
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
 
 @Entity
-@Table(name = "webwrappers")
 public class WebWrapper {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private Long id;
+	
+	@Index
+	private String site;
+	
 	private String titleSelector;
 	private String authorsSelector;
 	private String priceSelector;
@@ -19,10 +23,11 @@ public class WebWrapper {
 	public WebWrapper() {
 	}
 
-	public WebWrapper(Integer id, String titleSelector, String authorsSelector, String priceSelector,
+	public WebWrapper(Long id, String site, String titleSelector, String authorsSelector, String priceSelector,
 			String attributeSelector, String descriptionSelector, String imageLinkSelector) {
 		super();
 		this.id = id;
+		this.site = site;
 		this.titleSelector = titleSelector;
 		this.authorsSelector = authorsSelector;
 		this.priceSelector = priceSelector;
@@ -35,6 +40,7 @@ public class WebWrapper {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("WebWrapper [id=").append(id);
+		builder.append(", site=").append(site);
 		builder.append(", titleSelector=").append(titleSelector);
 		builder.append(", authorsSelector=").append(authorsSelector);
 		builder.append(", priceSelector=").append(priceSelector);
@@ -46,11 +52,11 @@ public class WebWrapper {
 		return builder.toString();
 	}
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 

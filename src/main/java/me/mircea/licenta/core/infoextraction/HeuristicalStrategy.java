@@ -1,7 +1,8 @@
 package me.mircea.licenta.core.infoextraction;
 
+import java.net.MalformedURLException;
 import java.text.ParseException;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -22,7 +23,6 @@ import com.google.common.base.Preconditions;
 
 import me.mircea.licenta.core.entities.PricePoint;
 import me.mircea.licenta.core.entities.Book;
-import me.mircea.licenta.core.entities.Site;
 import me.mircea.licenta.core.entities.WebWrapper;
 import me.mircea.licenta.core.utils.CssUtil;
 import me.mircea.licenta.core.utils.HtmlUtil;
@@ -84,16 +84,18 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 	}
 
 	@Override
-	public PricePoint extractPricePoint(Element htmlElement, Locale locale, LocalDate retrievedDay, Site site) {
+	public PricePoint extractPricePoint(Element htmlElement, Locale locale, Instant retrievedTime) {
 		Preconditions.checkNotNull(htmlElement);
 		String price = htmlElement.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.priceWordSet)).text();
 
 		PricePoint pricePoint = null;
 		try {
-			pricePoint = PricePoint.valueOf(price, locale, retrievedDay,
-					HtmlUtil.extractFirstLinkOfElement(htmlElement), site);
+			final String url = HtmlUtil.extractFirstLinkOfElement(htmlElement);
+			pricePoint = PricePoint.valueOf(price, locale, retrievedTime, url);
 		} catch (ParseException e) {
 			logger.warn("Price tag was ill-formated {}", price);
+		} catch (MalformedURLException e) {
+			logger.warn("Url was malformed {}", e);
 		}
 
 		return pricePoint;

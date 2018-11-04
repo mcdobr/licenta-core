@@ -1,7 +1,8 @@
 package me.mircea.licenta.core.infoextraction;
 
+import java.net.MalformedURLException;
 import java.text.ParseException;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -18,7 +19,6 @@ import com.google.common.base.Preconditions;
 
 import me.mircea.licenta.core.entities.Book;
 import me.mircea.licenta.core.entities.PricePoint;
-import me.mircea.licenta.core.entities.Site;
 import me.mircea.licenta.core.entities.WebWrapper;
 
 public class WrapperStrategy implements InformationExtractionStrategy {
@@ -62,14 +62,16 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 	}
 
 	@Override
-	public PricePoint extractPricePoint(Element htmlElement, Locale locale, LocalDate retrievedDay, Site site) {
+	public PricePoint extractPricePoint(Element htmlElement, Locale locale, Instant retrievedTime) {
 		String priceText = htmlElement.selectFirst(wrapper.getPriceSelector()).text();
 
 		PricePoint pricePoint = null;
 		try {
-			pricePoint = PricePoint.valueOf(priceText, locale, retrievedDay, htmlElement.baseUri(), site);
+			pricePoint = PricePoint.valueOf(priceText, locale, retrievedTime, htmlElement.baseUri());
 		} catch (ParseException e) {
 			logger.warn("Price tag was ill-formated {}", priceText);
+		} catch (MalformedURLException e) {
+			logger.warn("Url was malformed {}", e);
 		}
 		return pricePoint;
 	}

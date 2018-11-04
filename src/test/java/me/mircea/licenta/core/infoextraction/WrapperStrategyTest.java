@@ -6,7 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -80,9 +80,8 @@ public class WrapperStrategyTest {
 		WebWrapper wrapper = donor.generateWrapper(mainContent);
 		InformationExtractionStrategy strategy = new WrapperStrategy(wrapper);
 
-		PricePoint price = strategy.extractPricePoint(mainContent, Locale.forLanguageTag("ro-ro"), LocalDate.now(),
-				null);
-		assertEquals(35.96, price.getNominalValue().doubleValue(), 1e-5);
+		PricePoint price = strategy.extractPricePoint(mainContent, Locale.forLanguageTag("ro-ro"), Instant.now());
+		assertEquals(39.95, price.getNominalValue().doubleValue(), 1e-5);
 
 		// TODO: make it so that it extracts off of alexandria
 	}

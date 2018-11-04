@@ -1,6 +1,6 @@
 package me.mircea.licenta.core.infoextraction;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
 
@@ -12,7 +12,6 @@ import com.google.common.base.Preconditions;
 
 import me.mircea.licenta.core.entities.PricePoint;
 import me.mircea.licenta.core.entities.Book;
-import me.mircea.licenta.core.entities.Site;
 
 public class SemanticWebStrategy implements InformationExtractionStrategy {
 
@@ -54,7 +53,7 @@ public class SemanticWebStrategy implements InformationExtractionStrategy {
 	}
 
 	@Override
-	public PricePoint extractPricePoint(Element htmlElement, Locale locale, LocalDate retrievedDay, Site site) {
+	public PricePoint extractPricePoint(Element htmlElement, Locale locale, Instant retrievedDay) {
 		// TODO Auto-generated method stub
 		return null;
 	}

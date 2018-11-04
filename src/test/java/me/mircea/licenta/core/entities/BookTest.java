@@ -5,7 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.net.MalformedURLException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Currency;
 import java.util.Locale;
@@ -19,8 +21,12 @@ public class BookTest {
 	@Rule
 	public final ExpectedException exception = ExpectedException.none();
 	
+	private final String mockUrl = "http://www.dummy.com";
+	private final Instant mockInstant = Instant.now();
+	private final Currency mockCurrency = Currency.getInstance(Locale.forLanguageTag("ro-ro"));
+	
 	@Test
-	public void shouldBeEqual() {
+	public void shouldBeEqual() throws MalformedURLException {
 		Book book1 = new Book();
 		Book book2 = new Book();
 		
@@ -31,8 +37,9 @@ public class BookTest {
 		
 		assertEquals(book1, book2);
 		
-		PricePoint price1 = new PricePoint(1L, BigDecimal.valueOf(20.00), null, LocalDate.now(), null, null);
-		PricePoint price2 = new PricePoint(1L, BigDecimal.valueOf(20.00), null, LocalDate.now(), null, null);
+		final String url = "www.dummyUrl.com";
+		PricePoint price1 = new PricePoint(1L, BigDecimal.valueOf(20.00), mockCurrency, mockInstant, mockUrl);
+		PricePoint price2 = new PricePoint(1L, BigDecimal.valueOf(20.00), mockCurrency, mockInstant, mockUrl);
 		
 		book1.getPricepoints().add(price1);
 		book2.getPricepoints().add(price2);
@@ -63,17 +70,14 @@ public class BookTest {
 	}
 	
 	@Test
-	public void shouldHaveOnlyOnePricepointPerSiteDay() {
+	public void shouldHaveOnlyOnePricepointPerSiteDay() throws MalformedURLException {
 		Book persisted = new Book(1L, "Anna Karenina", "Limba de lemn", Arrays.asList("Lev Tolstoi"));
 		Book addition = new Book(null, "Anna Karenina", "Si mai multa limba de lemn", Arrays.asList("Lev Tolstoi"));
 		
-		Site site = new Site(1L, "alexa", "https://someurl.com");
-		
-		final Currency ron = Currency.getInstance(Locale.forLanguageTag("ro-ro"));
-		PricePoint p1 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now(), null, site);
-		PricePoint p2 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now(), null, site);
+		PricePoint p1 = new PricePoint(BigDecimal.valueOf(30.53), mockCurrency, mockInstant, mockUrl);
+		PricePoint p2 = new PricePoint(BigDecimal.valueOf(30.53), mockCurrency, mockInstant, mockUrl);
 
-		PricePoint p3 = new PricePoint(BigDecimal.valueOf(30.53), ron, LocalDate.now().plusDays(1), null, site);
+		PricePoint p3 = new PricePoint(BigDecimal.valueOf(30.53), mockCurrency, mockInstant.plus(1, ChronoUnit.DAYS), mockUrl);
 		
 		persisted.getPricepoints().add(p1);
 		persisted.getPricepoints().add(p3);

@@ -1,6 +1,6 @@
 package me.mircea.licenta.core.infoextraction;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
 
@@ -10,7 +10,6 @@ import org.jsoup.select.Elements;
 
 import me.mircea.licenta.core.entities.PricePoint;
 import me.mircea.licenta.core.entities.Book;
-import me.mircea.licenta.core.entities.Site;
 
 /**
  * @author mircea
@@ -40,7 +39,7 @@ public interface InformationExtractionStrategy {
 		return extractBook(bookCard, null);
 	}
 
-	public PricePoint extractPricePoint(Element bookCard, Locale locale, LocalDate retrievedDay, Site site);
+	public PricePoint extractPricePoint(Element bookCard, Locale locale, Instant retrievedTime);
 
 	public Map<String, String> extractBookAttributes(Document bookPage);
 	

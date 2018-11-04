@@ -5,18 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
 import java.util.HashSet;
 
-import org.hibernate.annotations.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,41 +18,22 @@ import com.googlecode.objectify.annotation.Index;
 import me.mircea.licenta.core.utils.Normalizer;
 
 @Entity
-@javax.persistence.Entity
-@Table(name = "books")
 public class Book {
 	private static final Logger logger = LoggerFactory.getLogger(Book.class);
 	
 	@Id
-	@javax.persistence.Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
 	@Index
-	@Column(nullable = false)
 	private String title;
-
-	@ElementCollection(fetch = FetchType.EAGER)
+	@Index
 	private List<String> authors;
-
-	@Column(unique = true)
+	@Index
 	private String isbn;
-
-	@Column
-	@Type(type = "text")
 	private String description;
-
-	@OneToMany(cascade = CascadeType.ALL)
 	private Set<PricePoint> pricepoints;
-
 	private String publishingHouse;
-
 	private Integer releaseYear;
-
 	private String format;
-	
-	@Column
-	@Type(type = "text")
 	private String coverUrl;
 
 	public Book() {
