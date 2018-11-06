@@ -10,7 +10,6 @@ import java.time.Instant;
 import java.util.Currency;
 import java.util.Locale;
 
-
 import com.google.common.base.Preconditions;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
@@ -23,18 +22,20 @@ public class PricePoint {
 	@Id
 	private Long id;
 	private BigDecimal nominalValue;
-	
+
 	private Currency currency;
-	@Index private Instant retrievedTime;
+	@Index
+	private Instant retrievedTime;
 	private String url;
 	@Index
 	private String site;
-	
+
 	public PricePoint() {
 		retrievedTime = Instant.now();
 	}
 
-	public PricePoint(Long id, BigDecimal nominalValue, Currency currency, Instant retrievedTime, String url) throws MalformedURLException {
+	public PricePoint(Long id, BigDecimal nominalValue, Currency currency, Instant retrievedTime, String url)
+			throws MalformedURLException {
 		super();
 		Preconditions.checkNotNull(retrievedTime);
 		Preconditions.checkNotNull(url);
@@ -45,8 +46,9 @@ public class PricePoint {
 		this.url = url;
 		this.site = HtmlUtil.getDomainOfUrl(url);
 	}
-	
-	public PricePoint(BigDecimal nominalValue, Currency currency, Instant retrievedTime, String url) throws MalformedURLException {
+
+	public PricePoint(BigDecimal nominalValue, Currency currency, Instant retrievedTime, String url)
+			throws MalformedURLException {
 		this(null, nominalValue, currency, retrievedTime, url);
 	}
 
@@ -81,7 +83,7 @@ public class PricePoint {
 	public void setRetrievedTime(Instant retrievedTime) {
 		this.retrievedTime = retrievedTime;
 	}
-	
+
 	public String getUrl() {
 		return url;
 	}
@@ -102,7 +104,7 @@ public class PricePoint {
 		builder.append("]");
 		return builder.toString();
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -123,26 +125,26 @@ public class PricePoint {
 			return false;
 		if (!(obj instanceof PricePoint))
 			return false;
-		
+
 		PricePoint other = (PricePoint) obj;
 		if (currency == null) {
 			if (other.currency != null)
 				return false;
 		} else if (!currency.equals(other.currency))
 			return false;
-		
+
 		if (nominalValue == null) {
 			if (other.nominalValue != null)
 				return false;
 		} else if (!nominalValue.equals(other.nominalValue))
 			return false;
-		
+
 		if (retrievedTime == null) {
 			if (other.retrievedTime != null)
 				return false;
 		} else if (!retrievedTime.equals(other.retrievedTime))
 			return false;
-		
+
 		if (url == null) {
 			if (other.url != null)
 				return false;
@@ -169,18 +171,20 @@ public class PricePoint {
 	 * @return A pricepoint extracted from the string.
 	 * @throws ParseException
 	 *             if the String is not formatted according to the locale.
-	 * @throws MalformedURLException 
+	 * @throws MalformedURLException
 	 */
-	public static PricePoint valueOf(String price, final Locale locale, Instant retrievedTime, String url) throws ParseException, MalformedURLException {
+	public static PricePoint valueOf(String price, final Locale locale, Instant retrievedTime, String url)
+			throws ParseException, MalformedURLException {
 		price = normalizeStringWithLocale(price, locale);
-		
+
 		final NumberFormat noFormat = NumberFormat.getNumberInstance(locale);
 		if (noFormat instanceof DecimalFormat) {
 			((DecimalFormat) noFormat).setParseBigDecimal(true);
 		}
 
 		BigDecimal nominalValue = (BigDecimal) noFormat.parse(price);
-		if (!price.matches(".*[.,].*") && nominalValue.stripTrailingZeros().scale() <= 0 && nominalValue.compareTo(BigDecimal.valueOf(100)) >= 1)
+		if (!price.matches(".*[.,].*") && nominalValue.stripTrailingZeros().scale() <= 0
+				&& nominalValue.compareTo(BigDecimal.valueOf(100)) >= 1)
 			nominalValue = nominalValue.divide(BigDecimal.valueOf(100));
 
 		return new PricePoint(null, nominalValue, Currency.getInstance(locale), retrievedTime, url);
@@ -188,6 +192,7 @@ public class PricePoint {
 
 	/**
 	 * Does the actual fixing of the price tag.
+	 * 
 	 * @param price
 	 * @param locale
 	 * @return
@@ -196,27 +201,28 @@ public class PricePoint {
 		DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
 		String normalDecimalSeparator = String.valueOf(symbols.getDecimalSeparator());
 		String normalGroupingSeparator = String.valueOf(symbols.getGroupingSeparator());
-		
+
 		// If a mismatch between locale and website, try and fix it
 		final int decimalFirst = price.indexOf(normalDecimalSeparator);
 		final int groupingFirst = price.indexOf(normalGroupingSeparator);
-		
+
 		final boolean hasNormalDecimalSeparator = (decimalFirst != -1);
 		final boolean hasNormalGroupingSeparator = (groupingFirst != -1);
-		final boolean hasBothButReversed = hasNormalDecimalSeparator && hasNormalGroupingSeparator && groupingFirst > decimalFirst;
+		final boolean hasBothButReversed = hasNormalDecimalSeparator && hasNormalGroupingSeparator
+				&& groupingFirst > decimalFirst;
 		if (!hasNormalDecimalSeparator) {
 			price = price.replaceAll("[.,]", normalDecimalSeparator);
-		} else if (!hasNormalGroupingSeparator) { //has decimal but no grouping
+		} else if (!hasNormalGroupingSeparator) { // has decimal but no grouping
 			String substring = price.substring(decimalFirst + 1);
 			if (substring.matches("^\\d{3,}.*"))
 				price = price.replaceAll(normalDecimalSeparator, normalGroupingSeparator);
 		} else if (hasBothButReversed) {
 			price = swapCharactersInString(price, normalDecimalSeparator.charAt(0), normalGroupingSeparator.charAt(0));
-		} 
-		
+		}
+
 		return price;
 	}
-	
+
 	private static String swapCharactersInString(final String str, final char first, final char second) {
 		char[] chars = str.toCharArray();
 		for (int i = 0; i < chars.length; ++i) {
@@ -224,7 +230,7 @@ public class PricePoint {
 				chars[i] = second;
 			else if (chars[i] == second)
 				chars[i] = first;
-				
+
 		}
 		return String.valueOf(chars);
 	}
