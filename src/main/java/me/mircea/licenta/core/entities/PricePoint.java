@@ -8,16 +8,13 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Currency;
-import java.util.Date;
 import java.util.Locale;
 
 
 import com.google.common.base.Preconditions;
-import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
-import com.googlecode.objectify.annotation.Stringify;
 
 import me.mircea.licenta.core.utils.HtmlUtil;
 
@@ -27,15 +24,11 @@ public class PricePoint {
 	private Long id;
 	private BigDecimal nominalValue;
 	
-	//@Stringify(CurrencyStringifier.class)
 	private Currency currency;
-	//@Stringify(InstantStringifier.class)
 	@Index private Instant retrievedTime;
 	private String url;
 	@Index
 	private String site;
-
-	public Key<Book> book;
 	
 	public PricePoint() {
 		retrievedTime = Instant.now();

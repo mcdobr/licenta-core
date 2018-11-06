@@ -3,14 +3,11 @@ package me.mircea.licenta.core.entities;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-
-import java.util.HashSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
@@ -30,7 +27,7 @@ public class Book {
 	@Index
 	private String isbn;
 	private String description;
-	private Set<PricePoint> pricepoints;
+	private List<Key<PricePoint>> pricepoints;
 	private String publishingHouse;
 	private Integer releaseYear;
 	private String format;
@@ -38,7 +35,7 @@ public class Book {
 
 	public Book() {
 		this.authors = new ArrayList<>();
-		this.pricepoints = new HashSet<>();
+		this.pricepoints = new ArrayList<>();
 	}
 
 	public Book(Long id, String title, String description, List<String> authors) {
@@ -49,7 +46,7 @@ public class Book {
 		this.title = title;
 		this.description = description;
 		this.authors = authors;
-		this.pricepoints = new HashSet<>();
+		this.pricepoints = new ArrayList<>();
 	}
 
 	private Book(Book persisted, Book addition) {
@@ -134,11 +131,11 @@ public class Book {
 		this.description = description;
 	}
 
-	public Set<PricePoint> getPricepoints() {
+	public List<Key<PricePoint>> getPricepoints() {
 		return pricepoints;
 	}
 
-	public void setPricepoints(Set<PricePoint> pricepoints) {
+	public void setPricepoints(List<Key<PricePoint>> pricepoints) {
 		this.pricepoints = pricepoints;
 	}
 
