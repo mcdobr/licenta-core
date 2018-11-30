@@ -4,9 +4,11 @@ import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -41,48 +43,92 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 	}
 
 	@Override
-	public Book extractBook(Element htmlElement, Document bookPage) {
-		Preconditions.checkNotNull(htmlElement);
+	public Book extractBook(Element bookCard, Document bookPage) {
+		Preconditions.checkNotNull(bookCard);
 
 		Book book = new Book();
-		String title = htmlElement.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.titleWordSet)).first().text();
-		book.setTitle(title);
+		book.setTitle(extractTitle(bookCard));
+		book.setImageUrl(extractImageUrl(bookPage));
+		book.setDescription(extractBookDescription(bookPage));
 		
-		String imageUrl = htmlElement.select("img[src]").first().absUrl("src");
-		book.setCoverUrl(imageUrl);
-		
-		// Extract book specs and attach to book
-		final Map<String, String> bookAttributes = this.extractBookAttributes(bookPage);
+		final Map<String, String> bookAttributes = extractBookAttributes(bookPage);
 		if (bookAttributes.isEmpty())
 			logger.debug("AttributesMap is empty on {}", bookPage.location());
 
+		book.setAuthors(extractAuthors(bookPage, bookAttributes));
+		book.setIsbn(extractIsbn(bookAttributes));
+		book.setFormat(extractFormat(bookAttributes));
+		book.setPublisher(extractPublisher(bookAttributes));
 		
-		Element authorElement = bookPage.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.authorWordSet)).first();
-		if (authorElement != null) {
-			book.setAuthors(Arrays.asList(authorElement.text().split(TextContentAnalyzer.authorSeparatorsRegex)));
-		} else {
-			bookAttributes.keySet().stream()
-				.filter(TextContentAnalyzer.authorWordSet::contains)
-				.findFirst().ifPresent(authorTag -> book.setAuthors(Arrays.asList(bookAttributes.get(authorTag).split(TextContentAnalyzer.authorSeparatorsRegex))));
-		}
-		
-		bookAttributes.keySet().stream().filter(TextContentAnalyzer.codeWordSet::contains).findFirst()
-			.ifPresent(key -> book.setIsbn(bookAttributes.get(key).replaceAll("^[ a-zA-Z]*", "")));
-		
-		bookAttributes.values().stream().filter(TextContentAnalyzer.formatsWordSet::containsKey)
-			.findFirst().ifPresent(format -> book.setFormat(TextContentAnalyzer.formatsWordSet.get(format)));
-		
-		bookAttributes.keySet().stream().filter(TextContentAnalyzer.yearWordSet::contains)
-			.findFirst().ifPresent(key -> book.setReleaseYear(Integer.parseInt(bookAttributes.get(key))));
-		
-		bookAttributes.keySet().stream().filter(TextContentAnalyzer.publisherWordSet::contains)
-			.findFirst().ifPresent(key -> book.setPublishingHouse(bookAttributes.get(key)));
-		
-		book.setDescription(this.extractBookDescription(bookPage));
-
+		/*bookAttributes.keySet().stream().filter(TextContentAnalyzer.yearWordSet::contains)
+			.findFirst().ifPresent(key -> book.setReleaseYear(Integer.parseInt(bookAttributes.get(key))));*/
 		return book;
 	}
 
+	
+	private String extractTitle(Element htmlElement) {
+		return htmlElement.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.titleWordSet)).first().text();
+	}
+	
+	private String extractImageUrl(Element htmlElement) {
+		Elements imagesWithAlt = htmlElement.select("img[alt]");
+		imagesWithAlt.removeAll(htmlElement.select("img[alt='']"));
+		
+		String result = imagesWithAlt.first().absUrl("src");
+		if (result.isEmpty()) {
+			Elements imagesInMetadata = htmlElement.select("meta[property*='image']");
+			result = imagesInMetadata.first().attr("content");
+		}
+		
+		return result;
+	}
+	
+	private List<String> extractAuthors(Element htmlElement, Map<String, String> attributes) {
+		Element authorElement = htmlElement.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.authorWordSet)).first();
+		String text = null;
+		if (authorElement != null) {
+			text = authorElement.text();
+		} else {	
+			Optional<String> authorAttribute = attributes.keySet().stream()
+				.filter(TextContentAnalyzer.authorWordSet::contains)
+				.findFirst();
+			if (authorAttribute.isPresent())
+				text = attributes.get(authorAttribute.get());
+		}
+		
+		if (text == null)
+			return Collections.emptyList();
+		else
+			return Arrays.asList(text.split(TextContentAnalyzer.authorSeparatorsRegex));
+	}
+	
+	private String extractIsbn(Map<String, String> attributes) {
+		String isbn = null;
+		Optional<String> isbnAttribute = attributes.keySet().stream().filter(TextContentAnalyzer.codeWordSet::contains).findFirst();
+		if (isbnAttribute.isPresent())
+			isbn = attributes.get(isbnAttribute.get()).replaceAll("^[ a-zA-Z]*", "");
+		
+		return isbn;
+	}
+	
+	private String extractFormat(Map<String, String> attributes) {
+		String format = null;
+		Optional<String> formatAttribute = attributes.keySet().stream().filter(TextContentAnalyzer.formatsWordSet::containsKey).findFirst();
+		if (formatAttribute.isPresent())
+			format = attributes.get(formatAttribute.get());
+		
+		return format;
+	}
+	
+	private String extractPublisher(Map<String, String> attributes) {
+		String publisher = null;
+		Optional<String> publisherAttribute = attributes.keySet().stream().filter(TextContentAnalyzer.publisherWordSet::contains).findFirst();
+		if (publisherAttribute.isPresent())
+			publisher = attributes.get(publisherAttribute.get());
+		
+		return publisher;
+	}
+	
 	@Override
 	public PricePoint extractPricePoint(Element htmlElement, Locale locale, Instant retrievedTime) {
 		Preconditions.checkNotNull(htmlElement);
@@ -236,7 +282,7 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 						.collect(Collectors.toList());
 				String tag = tagModes.get(0);
 
-				System.out.println(tagNameFrequencies);
+				logger.error("Tagname frequencies: {}", tagNameFrequencies);
 
 				// TODO: handle case when not all are the same
 				// TODO: handle case when tag is not unique to the site

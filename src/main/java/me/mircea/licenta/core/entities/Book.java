@@ -28,10 +28,10 @@ public class Book {
 	private String isbn;
 	private String description;
 	private List<Key<PricePoint>> pricepoints;
-	private String publishingHouse;
+	private String publisher;
 	private Integer releaseYear;
 	private String format;
-	private String coverUrl;
+	private String imageUrl;
 
 	public Book() {
 		this.authors = new ArrayList<>();
@@ -67,11 +67,11 @@ public class Book {
 		pricepoints = persisted.pricepoints;	
 		pricepoints.addAll(addition.pricepoints);
 		
-		publishingHouse = (String)Normalizer.getNotNullIfPossible(persisted.publishingHouse, addition.publishingHouse);
+		publisher = (String)Normalizer.getNotNullIfPossible(persisted.publisher, addition.publisher);
 		releaseYear = (Integer)Normalizer.getNotNullIfPossible(persisted.releaseYear, addition.releaseYear);
 		format = (String) Normalizer.getNotNullIfPossible(persisted.format, addition.format);
 		//TODO: maybe get reachable url
-		coverUrl = (String)Normalizer.getNotNullIfPossible(persisted.coverUrl, addition.coverUrl);
+		imageUrl = (String)Normalizer.getNotNullIfPossible(persisted.imageUrl, addition.imageUrl);
 	}
 	
 	/**
@@ -139,12 +139,12 @@ public class Book {
 		this.pricepoints = pricepoints;
 	}
 
-	public String getPublishingHouse() {
-		return publishingHouse;
+	public String getPublisher() {
+		return publisher;
 	}
 
-	public void setPublishingHouse(String publishingHouse) {
-		this.publishingHouse = publishingHouse;
+	public void setPublisher(String publisher) {
+		this.publisher = publisher;
 	}
 
 	public Integer getReleaseYear() {
@@ -163,12 +163,12 @@ public class Book {
 		this.format = format;
 	}
 
-	public String getCoverUrl() {
-		return coverUrl;
+	public String getImageUrl() {
+		return imageUrl;
 	}
 
-	public void setCoverUrl(String coverUrl) {
-		this.coverUrl = coverUrl;
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
 
 	@Override
@@ -180,10 +180,10 @@ public class Book {
 		builder.append(", isbn=").append(isbn);
 		builder.append(", description=").append(description != null);
 		builder.append(", pricepoints=").append(pricepoints);
-		builder.append(", publishingHouse=").append(publishingHouse);
+		builder.append(", publisher=").append(publisher);
 		builder.append(", releaseYear=").append(releaseYear);
 		builder.append(", format=").append(format);
-		builder.append(", coverUrl=").append(coverUrl);
+		builder.append(", imageUrl=").append(imageUrl);
 		builder.append("]");
 		return builder.toString();
 	}
@@ -193,13 +193,13 @@ public class Book {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((authors == null) ? 0 : authors.hashCode());
-		result = prime * result + ((coverUrl == null) ? 0 : coverUrl.hashCode());
+		result = prime * result + ((imageUrl == null) ? 0 : imageUrl.hashCode());
 		result = prime * result + ((description == null) ? 0 : description.hashCode());
 		result = prime * result + ((format == null) ? 0 : format.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((isbn == null) ? 0 : isbn.hashCode());
 		result = prime * result + ((pricepoints == null) ? 0 : pricepoints.hashCode());
-		result = prime * result + ((publishingHouse == null) ? 0 : publishingHouse.hashCode());
+		result = prime * result + ((publisher == null) ? 0 : publisher.hashCode());
 		result = prime * result + ((releaseYear == null) ? 0 : releaseYear.hashCode());
 		result = prime * result + ((title == null) ? 0 : title.hashCode());
 		return result;
@@ -224,11 +224,11 @@ public class Book {
 		} else if (!authors.equals(other.authors)) {
 			return false;
 		}
-		if (coverUrl == null) {
-			if (other.coverUrl != null) {
+		if (imageUrl == null) {
+			if (other.imageUrl != null) {
 				return false;
 			}
-		} else if (!coverUrl.equals(other.coverUrl)) {
+		} else if (!imageUrl.equals(other.imageUrl)) {
 			return false;
 		}
 		if (description == null) {
@@ -266,11 +266,11 @@ public class Book {
 		} else if (!pricepoints.equals(other.pricepoints)) {
 			return false;
 		}
-		if (publishingHouse == null) {
-			if (other.publishingHouse != null) {
+		if (publisher == null) {
+			if (other.publisher != null) {
 				return false;
 			}
-		} else if (!publishingHouse.equals(other.publishingHouse)) {
+		} else if (!publisher.equals(other.publisher)) {
 			return false;
 		}
 		if (releaseYear == null) {

@@ -22,11 +22,12 @@ public class PricePoint {
 	@Id
 	private Long id;
 	private BigDecimal nominalValue;
-
 	private Currency currency;
+	
 	@Index
 	private Instant retrievedTime;
 	private String url;
+	//private Boolean available;
 	@Index
 	private String site;
 

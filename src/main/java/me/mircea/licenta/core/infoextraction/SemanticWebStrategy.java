@@ -47,7 +47,7 @@ public class SemanticWebStrategy implements InformationExtractionStrategy {
 		
 		Element imgElement = htmlElement.select("img[src]").first();
 		if (imgElement != null)
-			book.setCoverUrl(imgElement.absUrl("src"));
+			book.setImageUrl(imgElement.absUrl("src"));
 		
 		return book;
 	}
