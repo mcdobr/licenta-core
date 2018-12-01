@@ -12,17 +12,22 @@ import java.util.Set;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.net.InternetDomainName;
 
+import me.mircea.licenta.core.infoextraction.HeuristicalStrategy;
+
 public class HtmlUtil {
+	private static final Logger logger = LoggerFactory.getLogger(HtmlUtil.class);
 	public static final Set<String> htmlTags = new HashSet<>();
 	static {
 		try {
 			String text = new String(Files.readAllBytes(Paths.get("/html_tags.csv")), StandardCharsets.UTF_8);
 			Arrays.asList(text.split(",")).stream().forEach(htmlTags::add);
 		} catch (IOException e) {
-			//TODO: logger
+			logger.error("Could not read file containing all html compliant tags: {}", e);
 		}
 	}
 	
@@ -51,7 +56,7 @@ public class HtmlUtil {
 	public static Element extractMainContent(Document doc) {
 		sanitizeHtml(doc);
 		
-		//TODO: fix this selector
+		//TODO: fix this selector (not applies only on last one)
 		return doc.select("[id='content'],[class*='continut'],[class*='page']:not(:has([id='content'],[class*='continut'],[class*='page']))").first();
 	}
 }

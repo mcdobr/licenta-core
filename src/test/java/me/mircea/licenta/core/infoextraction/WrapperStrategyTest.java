@@ -22,7 +22,8 @@ import me.mircea.licenta.core.entities.WebWrapper;
 import me.mircea.licenta.core.utils.HtmlUtil;
 
 public class WrapperStrategyTest {
-
+	
+	
 	@Test
 	public void shouldGetBookCards() throws IOException {
 		Element singlePageContent = HtmlUtil.extractMainContent(Jsoup.connect(
@@ -59,7 +60,7 @@ public class WrapperStrategyTest {
 		Book extractedBook = strategy.extractBook(null, dummyDoc);
 		assertEquals("Inima omului", extractedBook.getTitle());
 
-		Map<String, String> attributes = strategy.extractBookAttributes(dummyDoc);
+		Map<String, String> attributes = strategy.extractAttributes(dummyDoc);
 		assertFalse(attributes.isEmpty());
 
 		List<String> expectedAuthors = Arrays.asList("Jon Kalman Stefansson");

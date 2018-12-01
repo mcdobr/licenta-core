@@ -49,12 +49,12 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		Book book = new Book();
 		book.setTitle(extractTitle(bookCard));
 		book.setImageUrl(extractImageUrl(bookPage));
-		book.setDescription(extractBookDescription(bookPage));
+		book.setDescription(extractDescription(bookPage));
 		
-		final Map<String, String> bookAttributes = extractBookAttributes(bookPage);
+		final Map<String, String> bookAttributes = extractAttributes(bookPage);
 		if (bookAttributes.isEmpty())
 			logger.debug("AttributesMap is empty on {}", bookPage.location());
-
+		
 		book.setAuthors(extractAuthors(bookPage, bookAttributes));
 		book.setIsbn(extractIsbn(bookAttributes));
 		book.setFormat(extractFormat(bookAttributes));
@@ -64,13 +64,12 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 			.findFirst().ifPresent(key -> book.setReleaseYear(Integer.parseInt(bookAttributes.get(key))));*/
 		return book;
 	}
-
 	
-	private String extractTitle(Element htmlElement) {
+	public String extractTitle(Element htmlElement) {
 		return htmlElement.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.titleWordSet)).first().text();
 	}
 	
-	private String extractImageUrl(Element htmlElement) {
+	public String extractImageUrl(Element htmlElement) {
 		Elements imagesWithAlt = htmlElement.select("img[alt]");
 		imagesWithAlt.removeAll(htmlElement.select("img[alt='']"));
 		
@@ -83,7 +82,7 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		return result;
 	}
 	
-	private List<String> extractAuthors(Element htmlElement, Map<String, String> attributes) {
+	public List<String> extractAuthors(Element htmlElement, Map<String, String> attributes) {
 		Element authorElement = htmlElement.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.authorWordSet)).first();
 		String text = null;
 		if (authorElement != null) {
@@ -102,7 +101,7 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 			return Arrays.asList(text.split(TextContentAnalyzer.authorSeparatorsRegex));
 	}
 	
-	private String extractIsbn(Map<String, String> attributes) {
+	public String extractIsbn(Map<String, String> attributes) {
 		String isbn = null;
 		Optional<String> isbnAttribute = attributes.keySet().stream().filter(TextContentAnalyzer.codeWordSet::contains).findFirst();
 		if (isbnAttribute.isPresent())
@@ -111,7 +110,8 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		return isbn;
 	}
 	
-	private String extractFormat(Map<String, String> attributes) {
+	
+	public String extractFormat(Map<String, String> attributes) {
 		String format = null;
 		Optional<String> formatAttribute = attributes.keySet().stream().filter(TextContentAnalyzer.formatsWordSet::containsKey).findFirst();
 		if (formatAttribute.isPresent())
@@ -120,7 +120,8 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		return format;
 	}
 	
-	private String extractPublisher(Map<String, String> attributes) {
+	
+	public String extractPublisher(Map<String, String> attributes) {
 		String publisher = null;
 		Optional<String> publisherAttribute = attributes.keySet().stream().filter(TextContentAnalyzer.publisherWordSet::contains).findFirst();
 		if (publisherAttribute.isPresent())
@@ -148,7 +149,7 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 	}
 
 	@Override
-	public String extractBookDescription(Document bookPage) {
+	public String extractDescription(Document bookPage) {
 		Preconditions.checkNotNull(bookPage);
 		Element descriptionElement = bookPage.select("[class*='descri']").first();
 		return (descriptionElement != null) ? descriptionElement.text() : null;
@@ -163,7 +164,7 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 	 */
 
 	@Override
-	public Map<String, String> extractBookAttributes(Document bookPage) {
+	public Map<String, String> extractAttributes(Document bookPage) {
 		Preconditions.checkNotNull(bookPage);
 		Map<String, String> bookAttributes = new TreeMap<>();
 
@@ -194,6 +195,7 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 
 	@Override
 	public WebWrapper generateWrapper(Element bookPage, Elements additionals) {
+		//TODO: refactor this
 		WebWrapper wrapper = new WebWrapper();
 
 		String titleSelector = CssUtil.makeClassOrIdContains(TextContentAnalyzer.titleWordSet);
@@ -206,9 +208,25 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		Element authorsElement = bookPage.select(authorsSelector).first();
 		if (authorsElement != null)
 			wrapper.setAuthorsSelector(generateCssSelectorFor(new Elements(authorsElement)));
-
+		
 		String priceSelector = CssUtil.makeClassOrIdContains(TextContentAnalyzer.priceWordSet);
 		Element priceElement = bookPage.select(priceSelector).first();
+		//TODO: handle currency
+		String priceRegexSelector = ":matchesOwn(lei)";
+		Element priceRegexElement = bookPage.select(priceRegexSelector).first();
+		if (!priceRegexElement.equals(priceElement)) {
+			String priceHtml = priceElement.html();
+			String priceRegexHtml = priceRegexElement.html();
+
+			String str = bookPage.outerHtml();
+			
+			int indexOfPrice = str.indexOf(priceHtml);
+			int indexOfRegex = str.indexOf(priceRegexHtml);
+			
+			//TODO: this may break
+			priceElement = (indexOfPrice <= indexOfRegex) ? priceElement : priceRegexElement;
+		}
+		
 		if (priceElement != null)
 			wrapper.setPriceSelector(generateCssSelectorFor(new Elements(priceElement)));
 
@@ -249,6 +267,7 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 	
 	@Override
 	public String generateCssSelectorFor(Elements elements) {
+		//TODO: refactor this
 		Preconditions.checkArgument(!elements.isEmpty());
 
 		String selector = null;
@@ -273,7 +292,7 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 			if (!classModes.get(0).isEmpty()) {
 				selector = "." + classModes.get(0);
 			} else {
-				// TODO: get mode of tag name
+				// Gets mode of tag name
 				final Map<String, Long> tagNameFrequencies = elements.stream().map(Element::tagName)
 						.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 				final long maxTagFrequency = tagNameFrequencies.values().stream().max(Long::compare).orElse(0L);

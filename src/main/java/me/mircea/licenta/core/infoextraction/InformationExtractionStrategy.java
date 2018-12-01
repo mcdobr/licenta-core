@@ -1,6 +1,7 @@
 package me.mircea.licenta.core.infoextraction;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -41,7 +42,7 @@ public interface InformationExtractionStrategy {
 
 	public PricePoint extractPricePoint(Element bookCard, Locale locale, Instant retrievedTime);
 
-	public Map<String, String> extractBookAttributes(Document bookPage);
+	public Map<String, String> extractAttributes(Document bookPage);
 	
 	/**
 	 * @param bookPage
@@ -49,6 +50,5 @@ public interface InformationExtractionStrategy {
 	 * @throws NullPointerException
 	 *             if the passed document is null.
 	 */
-	public String extractBookDescription(Document bookPage);
-
+	public String extractDescription(Document bookPage);
 }

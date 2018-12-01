@@ -45,8 +45,7 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 			book.setTitle(bookPage.selectFirst(wrapper.getTitleSelector()).text());
 
 		if (wrapper.getAttributeSelector() != null) {
-			Map<String, String> attributes = extractBookAttributes(bookPage);
-			// TODO: handle attributes
+			Map<String, String> attributes = extractAttributes(bookPage);
 		}
 
 		if (wrapper.getAuthorsSelector() != null) {
@@ -77,12 +76,12 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 	}
 
 	@Override
-	public String extractBookDescription(Document bookPage) {
+	public String extractDescription(Document bookPage) {
 		return bookPage.selectFirst(wrapper.getDescriptionSelector()).text();
 	}
 
 	@Override
-	public Map<String, String> extractBookAttributes(Document bookPage) {
+	public Map<String, String> extractAttributes(Document bookPage) {
 		Elements specs = bookPage.select(wrapper.getAttributeSelector());
 		Map<String, String> attributes = new TreeMap<>();
 
@@ -93,5 +92,34 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 		}
 
 		return attributes;
+	}
+
+	public String extractPublisher(Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String extractFormat(Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String extractIsbn(Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public List<String> extractAuthors(Element htmlElement, Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String extractImageUrl(Element htmlElement) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	public String extractTitle(Element htmlElement) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

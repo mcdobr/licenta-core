@@ -1,6 +1,7 @@
 package me.mircea.licenta.core.infoextraction;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -59,13 +60,42 @@ public class SemanticWebStrategy implements InformationExtractionStrategy {
 	}
 
 	@Override
-	public String extractBookDescription(Document productPage) {
+	public String extractDescription(Document productPage) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
-	public Map<String, String> extractBookAttributes(Document bookPage) {
+	public Map<String, String> extractAttributes(Document bookPage) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String extractPublisher(Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String extractFormat(Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String extractIsbn(Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public List<String> extractAuthors(Element htmlElement, Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String extractImageUrl(Element htmlElement) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public String extractTitle(Element htmlElement) {
 		// TODO Auto-generated method stub
 		return null;
 	}
