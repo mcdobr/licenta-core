@@ -5,10 +5,12 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -60,6 +62,8 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		book.setFormat(extractFormat(bookAttributes));
 		book.setPublisher(extractPublisher(bookAttributes));
 		
+		book.getKeywords().addAll(splitKeywords(book.getTitle(), book.getIsbn(), book.getPublisher(), book.getFormat()));
+		book.getKeywords().addAll(splitKeywords(book.getAuthors().toArray(new String[0])));
 		/*bookAttributes.keySet().stream().filter(TextContentAnalyzer.yearWordSet::contains)
 			.findFirst().ifPresent(key -> book.setReleaseYear(Integer.parseInt(bookAttributes.get(key))));*/
 		return book;
@@ -315,5 +319,22 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		}
 		
 		return selector;
+	}
+	
+	private Set<String> splitKeywords(String ...values)
+	{
+		final int MIN_KEYWORD_LENGTH = 3;
+		Set<String> result = new HashSet<>();
+		for (String str : values) {
+			if (str != null) {
+				List<String> eligibleWords = Arrays.asList(str.split(" "))
+						.stream()
+						.filter(word -> word.length() >= MIN_KEYWORD_LENGTH)
+						.map(word -> word.toLowerCase())
+						.collect(Collectors.toList());
+				result.addAll(eligibleWords);
+			}
+		}
+		return result;
 	}
 }

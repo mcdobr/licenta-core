@@ -19,5 +19,4 @@ public class Selector {
 	private SelectorType type;
 	private String value;
 	private String attr;
-
 }

@@ -1,8 +1,13 @@
 package me.mircea.licenta.core.entities;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +25,12 @@ public class Book {
 	
 	@Id
 	private Long id;
-	@Index
 	private String title;
-	@Index
 	private List<String> authors;
-	@Index
 	private String isbn;
+	@Index
+	private Set<String> keywords;
+	
 	private String description;
 	private List<Key<PricePoint>> pricepoints;
 	private String publisher;
@@ -36,6 +41,7 @@ public class Book {
 	public Book() {
 		this.authors = new ArrayList<>();
 		this.pricepoints = new ArrayList<>();
+		this.keywords = new HashSet<>();
 	}
 
 	public Book(Long id, String title, String description, List<String> authors) {
@@ -47,6 +53,7 @@ public class Book {
 		this.description = description;
 		this.authors = authors;
 		this.pricepoints = new ArrayList<>();
+		this.keywords = new HashSet<>();
 	}
 
 	private Book(Book persisted, Book addition) {
@@ -58,20 +65,22 @@ public class Book {
 		boolean haveNonNullAndNonEqualIsbns = (persisted.isbn != null && addition.isbn != null && persisted.isbn.equals(addition.isbn));
 		Preconditions.checkArgument(oneHasNullIsbn || haveNonNullAndNonEqualIsbns, "Can not merge the two objects", persisted, addition);
 		
-		id = persisted.id;
-		title = (String)Normalizer.getNotNullIfPossible(persisted.title, addition.title);
-		authors = Normalizer.getLongestOfLists(persisted.authors, addition.authors);
-		isbn = (String)Normalizer.getNotNullIfPossible(persisted.isbn, addition.isbn);
-		description = Normalizer.getLongestOfNullableStrings(persisted.description, addition.description);
+		this.id = persisted.id;
+		this.title = (String)Normalizer.getNotNullIfPossible(persisted.title, addition.title);
+		this.authors = Normalizer.getLongestOfLists(persisted.authors, addition.authors);
+		this.isbn = (String)Normalizer.getNotNullIfPossible(persisted.isbn, addition.isbn);
+		this.description = Normalizer.getLongestOfNullableStrings(persisted.description, addition.description);
 		
-		pricepoints = persisted.pricepoints;	
-		pricepoints.addAll(addition.pricepoints);
+		this.pricepoints = persisted.pricepoints;	
+		this.pricepoints.addAll(addition.pricepoints);
 		
-		publisher = (String)Normalizer.getNotNullIfPossible(persisted.publisher, addition.publisher);
-		releaseYear = (Integer)Normalizer.getNotNullIfPossible(persisted.releaseYear, addition.releaseYear);
-		format = (String) Normalizer.getNotNullIfPossible(persisted.format, addition.format);
-		//TODO: maybe get reachable url
-		imageUrl = (String)Normalizer.getNotNullIfPossible(persisted.imageUrl, addition.imageUrl);
+		this.keywords = persisted.keywords;
+		this.keywords.addAll(addition.keywords);
+		
+		this.publisher = (String)Normalizer.getNotNullIfPossible(persisted.publisher, addition.publisher);
+		this.releaseYear = (Integer)Normalizer.getNotNullIfPossible(persisted.releaseYear, addition.releaseYear);
+		this.format = (String) Normalizer.getNotNullIfPossible(persisted.format, addition.format);
+		this.imageUrl = (String)Normalizer.getNotNullIfPossible(persisted.imageUrl, addition.imageUrl);
 	}
 	
 	/**
@@ -139,6 +148,14 @@ public class Book {
 		this.pricepoints = pricepoints;
 	}
 
+	public Set<String> getKeywords() {
+		return keywords;
+	}
+
+	public void setKeywords(Set<String> keywords) {
+		this.keywords = keywords;
+	}
+
 	public String getPublisher() {
 		return publisher;
 	}
@@ -180,6 +197,7 @@ public class Book {
 		builder.append(", isbn=").append(isbn);
 		builder.append(", description=").append(description != null);
 		builder.append(", pricepoints=").append(pricepoints);
+		builder.append(", keywords=").append(keywords);
 		builder.append(", publisher=").append(publisher);
 		builder.append(", releaseYear=").append(releaseYear);
 		builder.append(", format=").append(format);
@@ -199,6 +217,7 @@ public class Book {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((isbn == null) ? 0 : isbn.hashCode());
 		result = prime * result + ((pricepoints == null) ? 0 : pricepoints.hashCode());
+		result = prime * result + ((keywords == null) ? 0 : keywords.hashCode());
 		result = prime * result + ((publisher == null) ? 0 : publisher.hashCode());
 		result = prime * result + ((releaseYear == null) ? 0 : releaseYear.hashCode());
 		result = prime * result + ((title == null) ? 0 : title.hashCode());
@@ -264,6 +283,13 @@ public class Book {
 				return false;
 			}
 		} else if (!pricepoints.equals(other.pricepoints)) {
+			return false;
+		}
+		if (keywords == null) {
+			if (other.keywords != null) {
+				return false;
+			}
+		} else if (!keywords.equals(other.keywords)) {
 			return false;
 		}
 		if (publisher == null) {
