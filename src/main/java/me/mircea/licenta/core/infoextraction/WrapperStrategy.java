@@ -42,7 +42,7 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 
 		Book book = new Book();
 		if (wrapper.getTitleSelector() != null)
-			book.setTitle(bookPage.selectFirst(wrapper.getTitleSelector()).text());
+			book.setTitle(extractTitle(bookPage));
 
 		if (wrapper.getAttributeSelector() != null) {
 			Map<String, String> attributes = extractAttributes(bookPage);
@@ -58,6 +58,41 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 			book.setDescription(bookPage.selectFirst(wrapper.getDescriptionSelector()).text());
 
 		return book;
+	}
+
+	@Override
+	public String extractTitle(Element htmlElement) {
+		return htmlElement.selectFirst(wrapper.getTitleSelector()).text();
+	}
+
+	@Override
+	public List<String> extractAuthors(Element htmlElement, Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String extractImageUrl(Element htmlElement) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String extractIsbn(Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String extractPublisher(Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String extractFormat(Map<String, String> attributes) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -92,34 +127,5 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 		}
 
 		return attributes;
-	}
-
-	public String extractPublisher(Map<String, String> attributes) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String extractFormat(Map<String, String> attributes) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String extractIsbn(Map<String, String> attributes) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public List<String> extractAuthors(Element htmlElement, Map<String, String> attributes) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String extractImageUrl(Element htmlElement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	public String extractTitle(Element htmlElement) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

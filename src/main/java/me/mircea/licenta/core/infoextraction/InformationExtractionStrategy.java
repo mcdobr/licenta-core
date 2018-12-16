@@ -40,10 +40,21 @@ public interface InformationExtractionStrategy {
 		return extractBook(bookCard, null);
 	}
 
+	public String extractTitle(Element htmlElement);
+	
+	public List<String> extractAuthors(Element htmlElement, Map<String, String> attributes);
+	
+	public String extractImageUrl(Element htmlElement);
+	
+	public String extractIsbn(Map<String, String> attributes);
+	
+	public String extractFormat(Map<String, String> attributes);
+	
+	public String extractPublisher(Map<String, String> attributes);
+	
 	public PricePoint extractPricePoint(Element bookCard, Locale locale, Instant retrievedTime);
 
-	public Map<String, String> extractAttributes(Document bookPage);
-	
+
 	/**
 	 * @param bookPage
 	 * @return The description of the product on that page.
@@ -51,4 +62,13 @@ public interface InformationExtractionStrategy {
 	 *             if the passed document is null.
 	 */
 	public String extractDescription(Document bookPage);
+	/**
+	 * @brief Function that extracts the attribute of a book off of its page.
+	 * @param bookPage
+	 * @return An associative array of attributes.
+	 * @throws NullPointerException
+	 *             if the passed document is null.
+	 */
+	public Map<String, String> extractAttributes(Document bookPage);
+	
 }

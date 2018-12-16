@@ -13,18 +13,24 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import me.mircea.licenta.core.entities.Book;
 import me.mircea.licenta.core.entities.WebWrapper;
 import me.mircea.licenta.core.utils.HtmlUtil;
 
 public class HeuristicalStrategyTest {
+	private static final ClassLoader classLoader = HeuristicalStrategyTest.class.getClassLoader();
+	private static final Logger logger = LoggerFactory.getLogger(HeuristicalStrategyTest.class);
+	
+
 	InformationExtractionStrategy extractionStrategy = new HeuristicalStrategy();
-	final ClassLoader classLoader = getClass().getClassLoader();
+	
 	
 	@Test
 	public void shouldExtractElementsFromDownloadedMultiPage() throws IOException {
-		final URL resource = classLoader.getResource("heuristicMock.html");
+		final URL resource = classLoader.getResource("bookGridAlexandria.html");
 		assertNotNull(resource);
 
 		File inputFile = new File(resource.getFile());
@@ -39,10 +45,14 @@ public class HeuristicalStrategyTest {
 
 	@Test
 	public void shouldExtractAttributes() throws IOException {
-		Document doc = HtmlUtil.sanitizeHtml(
-				Jsoup.connect("https://carturesti.ro/carte/trecute-vieti-de-doamne-si-domnite-82699986?p=1995").get());
+		//Document doc = HtmlUtil.sanitizeHtml(
+		//		Jsoup.connect("https://carturesti.ro/carte/trecute-vieti-de-doamne-si-domnite-82699986?p=1995").get());
 
-		final URL resource = classLoader.getResource("heuristicFragmentMock.html");
+		Document doc = HtmlUtil.sanitizeHtml(
+				Jsoup.connect("https://carturesti.ro/carte/mindhalalig-szinesz-153594?p=7744").get());
+
+		
+		final URL resource = classLoader.getResource("bookCardCarturesti.html");
 		File inputFile = new File(resource.getFile());
 		Element htmlElement = Jsoup.parse(inputFile, "UTF-8");
 
@@ -65,7 +75,7 @@ public class HeuristicalStrategyTest {
 		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
 		WebWrapper wrapper = strategy.generateWrapper(mainContent, additionals);
 
-		System.out.println("Carturesti: " + wrapper.toString());
+		logger.info("Carturesti: {}", wrapper.toString());
 
 		assertEquals(".titluProdus", wrapper.getTitleSelector());
 		assertEquals(".autorProdus", wrapper.getAuthorsSelector());
@@ -78,10 +88,15 @@ public class HeuristicalStrategyTest {
 	public void shouldCreateAppropriateWrapperOnLibris() throws IOException {
 		String url = "https://www.libris.ro/naufragii-akira-yoshimura-HUM978-606-779-038-2--p1033264.html";
 		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect(url).get());
+		
+		// TODO: add mock grid page to extract book cards
+		
 		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
 		WebWrapper wrapper = strategy.generateWrapper(mainContent);
 
-		System.out.println("Libris: " + wrapper.toString());
+		logger.info("Libris: {}", wrapper.toString());
+		assertEquals("#product_title", wrapper.getTitleSelector());
+		assertEquals("#price", wrapper.getPriceSelector());
 		assertEquals("#text_container>p", wrapper.getAttributeSelector());
 	}
 
@@ -92,10 +107,11 @@ public class HeuristicalStrategyTest {
 		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
 		WebWrapper wrapper = strategy.generateWrapper(mainContent);
 
-		System.out.println("Alexandria: " + wrapper.toString());
-
+		logger.info("Alexandria: {}", wrapper.toString());
+		
+		assertEquals(".product-name", wrapper.getTitleSelector());
 		assertEquals(".product-author", wrapper.getAuthorsSelector());
 		assertEquals(".big-text>b", wrapper.getPriceSelector());
-		// TODO: add more (exclude .price)
+		//logger.info(wrapper.getAttributeSelector());
 	}
 }

@@ -1,5 +1,6 @@
 package me.mircea.licenta.core.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -17,14 +18,19 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.net.InternetDomainName;
 
-import me.mircea.licenta.core.infoextraction.HeuristicalStrategy;
-
 public class HtmlUtil {
 	private static final Logger logger = LoggerFactory.getLogger(HtmlUtil.class);
 	public static final Set<String> htmlTags = new HashSet<>();
+	
+	private static final ClassLoader classLoader = HtmlUtil.class.getClassLoader();
+	
+	
 	static {
 		try {
-			String text = new String(Files.readAllBytes(Paths.get("/html_tags.csv")), StandardCharsets.UTF_8);
+			final URL resource = classLoader.getResource("htmlTags.csv");
+			File inputFile = new File(resource.getFile());
+			
+			String text = new String(Files.readAllBytes(Paths.get(inputFile.toURI())), StandardCharsets.UTF_8);
 			Arrays.asList(text.split(",")).stream().forEach(htmlTags::add);
 		} catch (IOException e) {
 			logger.error("Could not read file containing all html compliant tags: {}", e);

@@ -69,23 +69,12 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		return book;
 	}
 	
+	@Override
 	public String extractTitle(Element htmlElement) {
 		return htmlElement.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.titleWordSet)).first().text();
 	}
 	
-	public String extractImageUrl(Element htmlElement) {
-		Elements imagesWithAlt = htmlElement.select("img[alt]");
-		imagesWithAlt.removeAll(htmlElement.select("img[alt='']"));
-		
-		String result = imagesWithAlt.first().absUrl("src");
-		if (result.isEmpty()) {
-			Elements imagesInMetadata = htmlElement.select("meta[property*='image']");
-			result = imagesInMetadata.first().attr("content");
-		}
-		
-		return result;
-	}
-	
+	@Override
 	public List<String> extractAuthors(Element htmlElement, Map<String, String> attributes) {
 		Element authorElement = htmlElement.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.authorWordSet)).first();
 		String text = null;
@@ -105,6 +94,21 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 			return Arrays.asList(text.split(TextContentAnalyzer.authorSeparatorsRegex));
 	}
 	
+	@Override
+	public String extractImageUrl(Element htmlElement) {
+		Elements imagesWithAlt = htmlElement.select("img[alt]");
+		imagesWithAlt.removeAll(htmlElement.select("img[alt='']"));
+		
+		String result = imagesWithAlt.first().absUrl("src");
+		if (result.isEmpty()) {
+			Elements imagesInMetadata = htmlElement.select("meta[property*='image']");
+			result = imagesInMetadata.first().attr("content");
+		}
+		
+		return result;
+	}
+	
+	@Override
 	public String extractIsbn(Map<String, String> attributes) {
 		String isbn = null;
 		Optional<String> isbnAttribute = attributes.keySet().stream().filter(TextContentAnalyzer.codeWordSet::contains).findFirst();
@@ -114,17 +118,17 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		return isbn;
 	}
 	
-	
+	@Override
 	public String extractFormat(Map<String, String> attributes) {
 		String format = null;
-		Optional<String> formatAttribute = attributes.keySet().stream().filter(TextContentAnalyzer.formatsWordSet::containsKey).findFirst();
+		Optional<String> formatAttribute = attributes.values().stream().filter(TextContentAnalyzer.formatsWordSet::containsKey).findFirst();
 		if (formatAttribute.isPresent())
 			format = attributes.get(formatAttribute.get());
 		
 		return format;
 	}
 	
-	
+	@Override
 	public String extractPublisher(Map<String, String> attributes) {
 		String publisher = null;
 		Optional<String> publisherAttribute = attributes.keySet().stream().filter(TextContentAnalyzer.publisherWordSet::contains).findFirst();
@@ -158,14 +162,6 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		Element descriptionElement = bookPage.select("[class*='descri']").first();
 		return (descriptionElement != null) ? descriptionElement.text() : null;
 	}
-
-	/**
-	 * @brief Function that extracts the attribute of a book off of its page.
-	 * @param bookPage
-	 * @return An associative array of attributes.
-	 * @throws NullPointerException
-	 *             if the passed document is null.
-	 */
 
 	@Override
 	public Map<String, String> extractAttributes(Document bookPage) {
@@ -305,10 +301,9 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 						.collect(Collectors.toList());
 				String tag = tagModes.get(0);
 
-				logger.error("Tagname frequencies: {}", tagNameFrequencies);
+				logger.info("Tagname frequencies: {}", tagNameFrequencies);
 
-				// TODO: handle case when not all are the same
-				// TODO: handle case when tag is not unique to the site
+				// TODO: handle case when not all are the same, handle case when tag is not unique to the site
 				// Also this is probably breakable
 				Element parent = elements.first().parent();
 				if (!parent.id().isEmpty())
