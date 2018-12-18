@@ -11,7 +11,6 @@ public class TextContentAnalyzer {
 	public static final Set<String> priceWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 	public static final Set<String> codeWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 	public static final Map<String, String> formatsWordSet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-	public static final Set<String> yearWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 	public static final Set<String> publisherWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 	public static final Set<String> descriptionWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 	
@@ -44,10 +43,7 @@ public class TextContentAnalyzer {
 		formatsWordSet.put("cartonata", "hardcover");
 		formatsWordSet.put("necartonata", "paperback");
 		
-		yearWordSet.add("an");
-		yearWordSet.add("anul");
-		yearWordSet.add("year");
-		
+		publisherWordSet.add("publishing");
 		publisherWordSet.add("publisher");
 		publisherWordSet.add("editura");
 		

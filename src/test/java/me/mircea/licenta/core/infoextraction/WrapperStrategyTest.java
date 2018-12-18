@@ -25,25 +25,33 @@ public class WrapperStrategyTest {
 	static final Logger logger = LoggerFactory.getLogger(WrapperStrategyTest.class);
 	
 	static final ClassLoader classLoader = WrapperStrategyTest.class.getClassLoader();
-	static final File bookPageAlexandria = new File(classLoader.getResource("bookPageAlexandria.html").getFile());
-	static final File bookPageCarturesti = new File(classLoader.getResource("bookPageCarturesti.html").getFile());
-	static final File bookPageLibris = new File(classLoader.getResource("bookPageLibris.html").getFile());
+	static final File alexandriaBookPageFile = new File(classLoader.getResource("bookPageAlexandria.html").getFile());
+	static final File carturestiBookPageFile = new File(classLoader.getResource("bookPageCarturesti.html").getFile());
+	static final File librisBookPageFile = new File(classLoader.getResource("bookPageLibris.html").getFile());
 	
 	static final String alexandriaUrl = "http://www.librariilealexandria.ro/";	
 	static final String carturestiUrl = "https://carturesti.ro/";
 	static final String librisUrl = "https://www.libris.ro/";
 	
-	static Element alexandriaContent;;
+	static Element alexandriaContent;
 	static Element carturestiContent;
 	static Element librisContent;
+	
+	static Element alexandriaMainContent;
+	static Element carturestiMainContent;
+	static Element librisMainContent;
 	
 	static RuleBasedStrategy donor;
 	
 	@Before
 	public void setUp() throws IOException {
-		alexandriaContent = HtmlUtil.extractMainContent(Jsoup.parse(bookPageAlexandria, "UTF-8", alexandriaUrl));
-		carturestiContent = HtmlUtil.extractMainContent(Jsoup.parse(bookPageCarturesti, "UTF-8", carturestiUrl));
-		librisContent = HtmlUtil.extractMainContent(Jsoup.parse(bookPageLibris, "UTF-8", librisUrl));
+		alexandriaContent = HtmlUtil.sanitizeHtml(Jsoup.parse(alexandriaBookPageFile, "UTF-8", alexandriaUrl));
+		carturestiContent = HtmlUtil.sanitizeHtml(Jsoup.parse(carturestiBookPageFile, "UTF-8", carturestiUrl));
+		librisContent = HtmlUtil.sanitizeHtml(Jsoup.parse(librisBookPageFile, "UTF-8", librisUrl));
+		
+		alexandriaMainContent = HtmlUtil.extractMainContent(Jsoup.parse(alexandriaBookPageFile, "UTF-8", alexandriaUrl));
+		carturestiMainContent = HtmlUtil.extractMainContent(Jsoup.parse(carturestiBookPageFile, "UTF-8", carturestiUrl));
+		librisMainContent = HtmlUtil.extractMainContent(Jsoup.parse(librisBookPageFile, "UTF-8", librisUrl));
 		
 		donor = new HeuristicalStrategy();
 	}
@@ -52,7 +60,7 @@ public class WrapperStrategyTest {
 	public void shouldExtractBookCards() throws IOException {
 		Element multiPageContent = HtmlUtil.sanitizeHtml(Jsoup.connect("https://www.libris.ro/carti").get());
 
-		WebWrapper wrapper = donor.generateWrapper(librisContent,
+		WebWrapper wrapper = donor.generateWrapper(librisMainContent,
 				new Elements(Jsoup.parseBodyFragment(multiPageContent.outerHtml())));
 		InformationExtractionStrategy strategy = new WrapperStrategy(wrapper);
 
@@ -69,14 +77,30 @@ public class WrapperStrategyTest {
 	{
 		InformationExtractionStrategy strategy;
 		
+		strategy = new WrapperStrategy(donor.generateWrapper(alexandriaMainContent));
+		assertEquals("Pentru o genealogie a globalizării", strategy.extractTitle(alexandriaMainContent));
+		
+		strategy = new WrapperStrategy(donor.generateWrapper(carturestiMainContent));
+		assertEquals("Inima omului", strategy.extractTitle(carturestiMainContent));
+		
+		strategy = new WrapperStrategy(donor.generateWrapper(librisMainContent));
+		assertEquals("Medicina, nutritie si buna dispozitie - Simona Tivadar", strategy.extractTitle(librisMainContent));
+	}
+	
+	@Test
+	public void shouldExtractImages()
+	{
+		InformationExtractionStrategy strategy;
+		
 		strategy = new WrapperStrategy(donor.generateWrapper(alexandriaContent));
-		assertEquals("Pentru o genealogie a globalizării", strategy.extractTitle(alexandriaContent));
+		assertEquals("http://www.librariilealexandria.ro/image/cache/catalog/produse/carti/Filosofie%20politica/Pentru%20o%20genealogie%202017-480x480.jpg", strategy.extractImageUrl(alexandriaContent));
 		
 		strategy = new WrapperStrategy(donor.generateWrapper(carturestiContent));
-		assertEquals("Inima omului", strategy.extractTitle(carturestiContent));
+		assertEquals("https://cdn.dc5.ro/img/prod/171704655-0.jpeg", strategy.extractImageUrl(carturestiContent));
 		
 		strategy = new WrapperStrategy(donor.generateWrapper(librisContent));
-		assertEquals("Medicina, nutritie si buna dispozitie - Simona Tivadar", strategy.extractTitle(librisContent));
+		assertEquals("https://www.libris.ro/img/pozeprod/59/1002/16/1250968.jpg", strategy.extractImageUrl(librisContent));
+	
 	}
 	
 	@Test
@@ -84,59 +108,69 @@ public class WrapperStrategyTest {
 	{
 		InformationExtractionStrategy strategy; 
 		
-		strategy = new WrapperStrategy(donor.generateWrapper(carturestiContent));
-		//assertEquals(Arrays.asList("Jon Kalman Stefansson"), strategy.extractAuthors(carturestiContent));
+		strategy = new WrapperStrategy(donor.generateWrapper(alexandriaMainContent));
+		assertEquals("Claude Karnoouh", strategy.extractAuthors(alexandriaMainContent));
 		
-		fail();
+		strategy = new WrapperStrategy(donor.generateWrapper(carturestiMainContent));
+		assertEquals("Jon Kalman Stefansson", strategy.extractAuthors(carturestiMainContent));
+		
+		strategy = new WrapperStrategy(donor.generateWrapper(librisMainContent));
+		assertEquals("Simona Tivadar", strategy.extractAuthors(librisMainContent));
 	}
 	
 	@Test
 	public void shouldExtractDescriptions()
 	{
+		InformationExtractionStrategy strategy;
+		
 		fail();
 	}
-
 	
-	/*
 	@Test
-	public void shouldExtractProduct() throws IOException {
-		Element mainContent = HtmlUtil.extractMainContent(Jsoup.parse(bookPageCarturesti, "UTF-8"));
-		WrapperGenerationStrategy donor = new HeuristicalStrategy();
-
-		WebWrapper wrapper = donor.generateWrapper(mainContent);
-		InformationExtractionStrategy strategy = new WrapperStrategy(wrapper);
-
-		// TODO: fix your damn interface
-		Document dummyDoc = Jsoup.parseBodyFragment(mainContent.outerHtml());
-
-		Book extractedBook = strategy.extractBook(null, dummyDoc);
-		assertEquals("Inima omului", extractedBook.getTitle());
-
-		Map<String, String> attributes = strategy.extractAttributes(dummyDoc);
-		assertFalse(attributes.isEmpty());
-
-		List<String> expectedAuthors = Arrays.asList("Jon Kalman Stefansson");
-		assertEquals(expectedAuthors, extractedBook.getAuthors());
-
-		assertFalse(extractedBook.getDescription().isEmpty());
-		System.out.println(extractedBook.toString());
-	}*/
+	public void shouldExtractFormats()
+	{
+		InformationExtractionStrategy strategy; 
+		
+		strategy = new WrapperStrategy(donor.generateWrapper(alexandriaMainContent));
+		assertEquals("Paperback", strategy.extractFormat(alexandriaMainContent));
+		
+		strategy = new WrapperStrategy(donor.generateWrapper(carturestiMainContent));
+		assertEquals("paperback", strategy.extractFormat(carturestiMainContent));
+		
+		strategy = new WrapperStrategy(donor.generateWrapper(librisMainContent));
+		assertEquals("paperback", strategy.extractFormat(librisMainContent));
+	}
+	
+	@Test
+	public void shouldExtractPublishers()
+	{
+		InformationExtractionStrategy strategy; 
+		
+		strategy = new WrapperStrategy(donor.generateWrapper(alexandriaMainContent));
+		assertEquals("Alexandria Publishing House", strategy.extractPublisher(alexandriaMainContent));
+		
+		strategy = new WrapperStrategy(donor.generateWrapper(carturestiMainContent));
+		assertEquals("Polirom", strategy.extractPublisher(carturestiMainContent));
+		
+		strategy = new WrapperStrategy(donor.generateWrapper(librisMainContent));
+		assertEquals("HUMANITAS", strategy.extractPublisher(librisMainContent));
+	}
 
 	@Test
 	public void shouldExtractPrices() throws IOException {
 		InformationExtractionStrategy strategy;
 		PricePoint price;
 		
-		strategy = new WrapperStrategy(donor.generateWrapper(alexandriaContent));
-		price = strategy.extractPricePoint(alexandriaContent, Locale.forLanguageTag("ro-ro"), Instant.now());
+		strategy = new WrapperStrategy(donor.generateWrapper(alexandriaMainContent));
+		price = strategy.extractPricePoint(alexandriaMainContent, Locale.forLanguageTag("ro-ro"), Instant.now());
 		assertEquals(39.00, price.getNominalValue().doubleValue(), 1e-5);
 		
-		strategy = new WrapperStrategy(donor.generateWrapper(carturestiContent));
-		price = strategy.extractPricePoint(carturestiContent, Locale.forLanguageTag("ro-ro"), Instant.now());
+		strategy = new WrapperStrategy(donor.generateWrapper(carturestiMainContent));
+		price = strategy.extractPricePoint(carturestiMainContent, Locale.forLanguageTag("ro-ro"), Instant.now());
 		assertEquals(41.95, price.getNominalValue().doubleValue(), 1e-5);
 		
-		strategy = new WrapperStrategy(donor.generateWrapper(librisContent));
-		price = strategy.extractPricePoint(librisContent, Locale.forLanguageTag("ro-ro"), Instant.now());
+		strategy = new WrapperStrategy(donor.generateWrapper(librisMainContent));
+		price = strategy.extractPricePoint(librisMainContent, Locale.forLanguageTag("ro-ro"), Instant.now());
 		assertEquals(32.55, price.getNominalValue().doubleValue(), 1e-5);
 	}
 }

@@ -4,7 +4,6 @@ import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -57,15 +56,13 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		if (bookAttributes.isEmpty())
 			logger.debug("AttributesMap is empty on {}", bookPage.location());
 		
-		book.setAuthors(extractAuthors(bookPage, bookAttributes));
-		book.setIsbn(extractIsbn(bookAttributes));
-		book.setFormat(extractFormat(bookAttributes));
-		book.setPublisher(extractPublisher(bookAttributes));
+		book.setAuthors(extractAuthors(bookPage));
+		book.setIsbn(extractIsbn(bookPage));
+		book.setFormat(extractFormat(bookPage));
+		book.setPublisher(extractPublisher(bookPage));
 		
 		book.getKeywords().addAll(splitKeywords(book.getTitle(), book.getIsbn(), book.getPublisher(), book.getFormat()));
-		book.getKeywords().addAll(splitKeywords(book.getAuthors().toArray(new String[0])));
-		/*bookAttributes.keySet().stream().filter(TextContentAnalyzer.yearWordSet::contains)
-			.findFirst().ifPresent(key -> book.setReleaseYear(Integer.parseInt(bookAttributes.get(key))));*/
+		book.getKeywords().addAll(splitKeywords(book.getAuthors()));
 		return book;
 	}
 	
@@ -75,7 +72,8 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 	}
 	
 	@Override
-	public List<String> extractAuthors(Element htmlElement, Map<String, String> attributes) {
+	public String extractAuthors(Element htmlElement) {
+		Map<String, String> attributes = this.extractAttributes(htmlElement);
 		Element authorElement = htmlElement.select(CssUtil.makeClassOrIdContains(TextContentAnalyzer.authorWordSet)).first();
 		String text = null;
 		if (authorElement != null) {
@@ -88,10 +86,7 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 				text = attributes.get(authorAttribute.get());
 		}
 		
-		if (text == null)
-			return Collections.emptyList();
-		else
-			return Arrays.asList(text.split(TextContentAnalyzer.authorSeparatorsRegex));
+		return text;
 	}
 	
 	@Override
@@ -109,7 +104,8 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 	}
 	
 	@Override
-	public String extractIsbn(Map<String, String> attributes) {
+	public String extractIsbn(Element htmlElement) {
+		Map<String, String> attributes = this.extractAttributes(htmlElement);
 		String isbn = null;
 		Optional<String> isbnAttribute = attributes.keySet().stream().filter(TextContentAnalyzer.codeWordSet::contains).findFirst();
 		if (isbnAttribute.isPresent())
@@ -119,7 +115,8 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 	}
 	
 	@Override
-	public String extractFormat(Map<String, String> attributes) {
+	public String extractFormat(Element htmlElement) {
+		Map<String, String> attributes = this.extractAttributes(htmlElement);
 		String format = null;
 		Optional<String> formatAttribute = attributes.values().stream().filter(TextContentAnalyzer.formatsWordSet::containsKey).findFirst();
 		if (formatAttribute.isPresent())
@@ -129,7 +126,8 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 	}
 	
 	@Override
-	public String extractPublisher(Map<String, String> attributes) {
+	public String extractPublisher(Element htmlElement) {
+		Map<String, String> attributes = this.extractAttributes(htmlElement);
 		String publisher = null;
 		Optional<String> publisherAttribute = attributes.keySet().stream().filter(TextContentAnalyzer.publisherWordSet::contains).findFirst();
 		if (publisherAttribute.isPresent())
@@ -164,7 +162,7 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 	}
 
 	@Override
-	public Map<String, String> extractAttributes(Document bookPage) {
+	public Map<String, String> extractAttributes(Element bookPage) {
 		Preconditions.checkNotNull(bookPage);
 		Map<String, String> bookAttributes = new TreeMap<>();
 
@@ -246,7 +244,7 @@ public class HeuristicalStrategy implements RuleBasedStrategy {
 		}
 
 		wrapper.setAttributeSelector(generateCssSelectorFor(attributeElements));
-		wrapper.setImageLinkSelector("img[alt]");
+		wrapper.setImageLinkSelector("img[alt]:not(img[alt='']),meta[property*='image']");
 
 		String descriptionSelector = CssUtil.makeClassOrIdContains(TextContentAnalyzer.descriptionWordSet);
 		Element descriptionElement = bookPage.select(descriptionSelector).first();

@@ -1,7 +1,6 @@
 package me.mircea.licenta.core.infoextraction;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -36,7 +35,7 @@ public class SemanticWebStrategy implements InformationExtractionStrategy {
 				book.setTitle(content);
 				break;
 			case "author":
-				book.getAuthors().add(content);
+				book.setAuthors(content);
 				break;
 			case "isbn":
 				book.setIsbn(content);
@@ -65,36 +64,43 @@ public class SemanticWebStrategy implements InformationExtractionStrategy {
 		return null;
 	}
 
-	public Map<String, String> extractAttributes(Document bookPage) {
+	@Override
+	public Map<String, String> extractAttributes(Element bookPage) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public String extractPublisher(Map<String, String> attributes) {
+	@Override
+	public String extractPublisher(Element htmlElement) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public String extractFormat(Element htmlElement) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public String extractFormat(Map<String, String> attributes) {
+	@Override
+	public String extractIsbn(Element htmlElement) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public String extractIsbn(Map<String, String> attributes) {
+	@Override
+	public String extractAuthors(Element htmlElement) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public List<String> extractAuthors(Element htmlElement, Map<String, String> attributes) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	@Override
 	public String extractImageUrl(Element htmlElement) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public String extractTitle(Element htmlElement) {
 		// TODO Auto-generated method stub
 		return null;

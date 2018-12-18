@@ -4,9 +4,10 @@ import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 
 import org.jsoup.nodes.Document;
@@ -20,6 +21,7 @@ import com.google.common.base.Preconditions;
 import me.mircea.licenta.core.entities.Book;
 import me.mircea.licenta.core.entities.PricePoint;
 import me.mircea.licenta.core.entities.WebWrapper;
+import me.mircea.licenta.core.utils.TextContentAnalyzer;
 
 public class WrapperStrategy implements InformationExtractionStrategy {
 	private static final Logger logger = LoggerFactory.getLogger(WrapperStrategy.class);
@@ -48,14 +50,9 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 			Map<String, String> attributes = extractAttributes(bookPage);
 		}
 
-		if (wrapper.getAuthorsSelector() != null) {
-			List<String> authors = Arrays
-					.asList(bookPage.selectFirst(wrapper.getAuthorsSelector()).text().split("[,&]"));
-			book.setAuthors(authors);
-		}
+		book.setAuthors(extractAuthors(bookPage));
 
-		if (wrapper.getDescriptionSelector() != null)
-			book.setDescription(bookPage.selectFirst(wrapper.getDescriptionSelector()).text());
+		book.setDescription(extractDescription(bookPage));
 
 		return book;
 	}
@@ -66,31 +63,56 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 	}
 
 	@Override
-	public List<String> extractAuthors(Element htmlElement, Map<String, String> attributes) {
-		// TODO Auto-generated method stub
-		return null;
+	public String extractAuthors(Element htmlElement) {
+		if (wrapper.getAuthorsSelector() != null && !wrapper.getAuthorsSelector().isEmpty()) {
+			return String.join(",", htmlElement.select(wrapper.getAuthorsSelector()).eachText());
+		} else {
+			Map<String, String> attributes = extractAttributes(htmlElement);
+			Optional<String> authorAttribute = attributes.keySet().stream()
+					.filter(TextContentAnalyzer.authorWordSet::contains)
+					.findFirst();
+			
+			if (authorAttribute.isPresent())
+				return attributes.get(authorAttribute.get());
+			else
+				return null;
+		}
 	}
 
 	@Override
 	public String extractImageUrl(Element htmlElement) {
+		Element imageUrlElement = htmlElement.selectFirst(wrapper.getImageLinkSelector());
+		if (imageUrlElement.hasAttr("src"))
+			return imageUrlElement.absUrl("src");
+		else
+			return imageUrlElement.attr("content");
+	}
+
+	@Override
+	public String extractIsbn(Element htmlElement) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public String extractIsbn(Map<String, String> attributes) {
-		// TODO Auto-generated method stub
-		return null;
+	public String extractPublisher(Element htmlElement) {
+		Map<String, String> attributes = extractAttributes(htmlElement);
+
+		// Find any attribute that contains a word in publisherWordSet
+		Optional<String> publisherAttribute = attributes.keySet().stream()
+			.filter(key -> !Collections.disjoint(Arrays.asList(key.split(" ")),
+												TextContentAnalyzer.publisherWordSet))
+			.findFirst();
+		
+		if (publisherAttribute.isPresent())
+			return attributes.get(publisherAttribute.get());
+		else
+			return null;
+		
 	}
 
 	@Override
-	public String extractPublisher(Map<String, String> attributes) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String extractFormat(Map<String, String> attributes) {
+	public String extractFormat(Element htmlElement) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -112,18 +134,32 @@ public class WrapperStrategy implements InformationExtractionStrategy {
 
 	@Override
 	public String extractDescription(Document bookPage) {
-		return bookPage.selectFirst(wrapper.getDescriptionSelector()).text();
+		if (wrapper.getDescriptionSelector() != null)
+			return bookPage.selectFirst(wrapper.getDescriptionSelector()).text();
+		else
+			return null;
 	}
 
 	@Override
-	public Map<String, String> extractAttributes(Document bookPage) {
+	public Map<String, String> extractAttributes(Element bookPage) {
 		Elements specs = bookPage.select(wrapper.getAttributeSelector());
 		Map<String, String> attributes = new TreeMap<>();
 
+		Elements normalizedSpecs = new Elements();
 		for (Element spec : specs) {
+			if (spec.tagName().equals("ul"))
+				normalizedSpecs.addAll(spec.children());
+			else
+				normalizedSpecs.add(spec);
+		}
+		
+		for (Element spec : normalizedSpecs) {
+			
 			String[] keyValuePair = spec.text().split(":", 2);
 			if (keyValuePair.length > 1)
 				attributes.put(keyValuePair[0].trim(), keyValuePair[1].trim());
+			else
+				attributes.put(keyValuePair[0], keyValuePair[0]);
 		}
 
 		return attributes;

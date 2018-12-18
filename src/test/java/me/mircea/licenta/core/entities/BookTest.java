@@ -51,8 +51,8 @@ public class BookTest {
 
 	@Test
 	public void shouldMergeForMostInformation() {
-		Book persisted = new Book(1L, "Anna Karenina", "Limba de lemn", Arrays.asList("Lev Tolstoi"));
-		Book addition = new Book(null, "Anna Karenina", "Si mai multa limba de lemn", Arrays.asList("Lev Tolstoi"));
+		Book persisted = new Book(1L, "Anna Karenina", "Limba de lemn", "Lev Tolstoi");
+		Book addition = new Book(null, "Anna Karenina", "Si mai multa limba de lemn", "Lev Tolstoi");
 	
 		Optional<Book> mergeOperation = Book.merge(persisted, addition);
 		assertTrue(mergeOperation.isPresent());	

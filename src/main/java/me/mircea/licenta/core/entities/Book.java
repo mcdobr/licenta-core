@@ -23,7 +23,7 @@ public class Book {
 	@Id
 	private Long id;
 	private String title;
-	private List<String> authors;
+	private String authors;
 	private String isbn;
 	@Index
 	private Set<String> keywords;
@@ -31,17 +31,15 @@ public class Book {
 	private String description;
 	private List<Key<PricePoint>> pricepoints;
 	private String publisher;
-	private Integer releaseYear;
 	private String format;
 	private String imageUrl;
 
 	public Book() {
-		this.authors = new ArrayList<>();
 		this.pricepoints = new ArrayList<>();
 		this.keywords = new HashSet<>();
 	}
 
-	public Book(Long id, String title, String description, List<String> authors) {
+	public Book(Long id, String title, String description, String authors) {
 		super();
 
 		Preconditions.checkNotNull(authors);
@@ -64,7 +62,7 @@ public class Book {
 		
 		this.id = persisted.id;
 		this.title = (String)Normalizer.getNotNullIfPossible(persisted.title, addition.title);
-		this.authors = Normalizer.getLongestOfLists(persisted.authors, addition.authors);
+		this.authors = Normalizer.getLongestOfNullableStrings(persisted.authors, addition.authors);
 		this.isbn = (String)Normalizer.getNotNullIfPossible(persisted.isbn, addition.isbn);
 		this.description = Normalizer.getLongestOfNullableStrings(persisted.description, addition.description);
 		
@@ -75,7 +73,6 @@ public class Book {
 		this.keywords.addAll(addition.keywords);
 		
 		this.publisher = (String)Normalizer.getNotNullIfPossible(persisted.publisher, addition.publisher);
-		this.releaseYear = (Integer)Normalizer.getNotNullIfPossible(persisted.releaseYear, addition.releaseYear);
 		this.format = (String) Normalizer.getNotNullIfPossible(persisted.format, addition.format);
 		this.imageUrl = (String)Normalizer.getNotNullIfPossible(persisted.imageUrl, addition.imageUrl);
 	}
@@ -113,11 +110,11 @@ public class Book {
 		this.title = title;
 	}
 
-	public List<String> getAuthors() {
+	public String getAuthors() {
 		return authors;
 	}
 
-	public void setAuthors(List<String> authors) {
+	public void setAuthors(String authors) {
 		this.authors = authors;
 	}
 
@@ -161,14 +158,6 @@ public class Book {
 		this.publisher = publisher;
 	}
 
-	public Integer getReleaseYear() {
-		return releaseYear;
-	}
-
-	public void setReleaseYear(Integer releaseYear) {
-		this.releaseYear = releaseYear;
-	}
-
 	public String getFormat() {
 		return format;
 	}
@@ -196,7 +185,6 @@ public class Book {
 		builder.append(", pricepoints=").append(pricepoints);
 		builder.append(", keywords=").append(keywords);
 		builder.append(", publisher=").append(publisher);
-		builder.append(", releaseYear=").append(releaseYear);
 		builder.append(", format=").append(format);
 		builder.append(", imageUrl=").append(imageUrl);
 		builder.append("]");
@@ -216,7 +204,6 @@ public class Book {
 		result = prime * result + ((pricepoints == null) ? 0 : pricepoints.hashCode());
 		result = prime * result + ((keywords == null) ? 0 : keywords.hashCode());
 		result = prime * result + ((publisher == null) ? 0 : publisher.hashCode());
-		result = prime * result + ((releaseYear == null) ? 0 : releaseYear.hashCode());
 		result = prime * result + ((title == null) ? 0 : title.hashCode());
 		return result;
 	}
@@ -294,13 +281,6 @@ public class Book {
 				return false;
 			}
 		} else if (!publisher.equals(other.publisher)) {
-			return false;
-		}
-		if (releaseYear == null) {
-			if (other.releaseYear != null) {
-				return false;
-			}
-		} else if (!releaseYear.equals(other.releaseYear)) {
 			return false;
 		}
 		if (title == null) {

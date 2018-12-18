@@ -12,6 +12,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +24,44 @@ import me.mircea.licenta.core.utils.HtmlUtil;
 public class HeuristicalStrategyTest {
 	private static final ClassLoader classLoader = HeuristicalStrategyTest.class.getClassLoader();
 	private static final Logger logger = LoggerFactory.getLogger(HeuristicalStrategyTest.class);
-	
 
+	static final File alexandriaBookPageFile = new File(classLoader.getResource("bookPageAlexandria.html").getFile());
+	static final File carturestiBookPageFile = new File(classLoader.getResource("bookPageCarturesti.html").getFile());
+	static final File librisBookPageFile = new File(classLoader.getResource("bookPageLibris.html").getFile());
+	
+	static final String alexandriaUrl = "http://www.librariilealexandria.ro/";	
+	static final String carturestiUrl = "https://carturesti.ro/";
+	static final String librisUrl = "https://www.libris.ro/";
+	
+	static Element alexandriaContent;
+	static Element carturestiContent;
+	static Element librisContent;
+	
+	static Element alexandriaMainContent;
+	static Element carturestiMainContent;
+	static Element librisMainContent;
+	
 	InformationExtractionStrategy extractionStrategy = new HeuristicalStrategy();
 	
+	@Before
+	public void setUp() throws IOException {
+		alexandriaContent = HtmlUtil.sanitizeHtml(Jsoup.parse(alexandriaBookPageFile, "UTF-8", alexandriaUrl));
+		carturestiContent = HtmlUtil.sanitizeHtml(Jsoup.parse(carturestiBookPageFile, "UTF-8", carturestiUrl));
+		librisContent = HtmlUtil.sanitizeHtml(Jsoup.parse(librisBookPageFile, "UTF-8", librisUrl));
+		
+		alexandriaMainContent = HtmlUtil.extractMainContent(Jsoup.parse(alexandriaBookPageFile, "UTF-8", alexandriaUrl));
+		carturestiMainContent = HtmlUtil.extractMainContent(Jsoup.parse(carturestiBookPageFile, "UTF-8", carturestiUrl));
+		librisMainContent = HtmlUtil.extractMainContent(Jsoup.parse(librisBookPageFile, "UTF-8", librisUrl));
+	}
+	
+	
+	@Test
+	public void shouldExtractAuthors()
+	{
+		assertEquals("Claude Karnoouh", extractionStrategy.extractAuthors(alexandriaMainContent));
+		assertEquals("Jon Kalman Stefansson", extractionStrategy.extractAuthors(carturestiMainContent));
+		assertEquals("Simona Tivadar", extractionStrategy.extractAuthors(librisMainContent));
+	}
 	
 	@Test
 	public void shouldExtractElementsFromDownloadedMultiPage() throws IOException {
@@ -45,9 +80,6 @@ public class HeuristicalStrategyTest {
 
 	@Test
 	public void shouldExtractAttributes() throws IOException {
-		//Document doc = HtmlUtil.sanitizeHtml(
-		//		Jsoup.connect("https://carturesti.ro/carte/trecute-vieti-de-doamne-si-domnite-82699986?p=1995").get());
-
 		Document doc = HtmlUtil.sanitizeHtml(
 				Jsoup.connect("https://carturesti.ro/carte/mindhalalig-szinesz-153594?p=7744").get());
 
@@ -61,6 +93,24 @@ public class HeuristicalStrategyTest {
 		assertNotEquals(book.getIsbn().trim(), "");
 	}
 
+
+	
+	
+	@Test
+	public void shouldCreateAppropriateWrapperOnAlexandria() throws IOException {
+		String url = "http://www.librariilealexandria.ro/elita-din-umbra";
+		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect(url).get());
+		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
+		WebWrapper wrapper = strategy.generateWrapper(mainContent);
+
+		logger.info("Alexandria: {}", wrapper.toString());
+		
+		assertEquals(".product-name", wrapper.getTitleSelector());
+		assertEquals(".product-author", wrapper.getAuthorsSelector());
+		assertEquals(".big-text>b", wrapper.getPriceSelector());
+		//logger.info(wrapper.getAttributeSelector());
+	}
+	
 	@Test
 	public void shouldCreateAppropriateWrapperOnCarturesti() throws IOException {
 		String url = "https://carturesti.ro/carte/pedaland-prin-viata-181658144?p=2";
@@ -98,20 +148,5 @@ public class HeuristicalStrategyTest {
 		assertEquals("#product_title", wrapper.getTitleSelector());
 		assertEquals("#price", wrapper.getPriceSelector());
 		assertEquals("#text_container>p", wrapper.getAttributeSelector());
-	}
-
-	@Test
-	public void shouldCreateAppropriateWrapperOnAlexandria() throws IOException {
-		String url = "http://www.librariilealexandria.ro/elita-din-umbra";
-		Element mainContent = HtmlUtil.extractMainContent(Jsoup.connect(url).get());
-		WrapperGenerationStrategy strategy = new HeuristicalStrategy();
-		WebWrapper wrapper = strategy.generateWrapper(mainContent);
-
-		logger.info("Alexandria: {}", wrapper.toString());
-		
-		assertEquals(".product-name", wrapper.getTitleSelector());
-		assertEquals(".product-author", wrapper.getAuthorsSelector());
-		assertEquals(".big-text>b", wrapper.getPriceSelector());
-		//logger.info(wrapper.getAttributeSelector());
 	}
 }
