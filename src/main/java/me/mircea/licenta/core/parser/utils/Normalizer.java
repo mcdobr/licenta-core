@@ -1,4 +1,4 @@
-package me.mircea.licenta.core.utils;
+package me.mircea.licenta.core.parser.utils;
 
 import java.util.List;
 

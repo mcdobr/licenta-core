@@ -1,4 +1,4 @@
-package me.mircea.licenta.core.utils;
+package me.mircea.licenta.core.parser.utils;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -14,7 +14,7 @@ public class CssUtil {
 	
 	public static String makeClassOrIdContains(final Set<String> words) {
 		return String.join(",", words.stream()
-				.map(word -> String.format("[class*='%s'],[id*='%s']", word, word)).
-				collect(Collectors.toList()));
+				.map(word -> String.format("[class*='%s'],[id*='%s']", word, word))
+				.collect(Collectors.toList()));
 	}
 }

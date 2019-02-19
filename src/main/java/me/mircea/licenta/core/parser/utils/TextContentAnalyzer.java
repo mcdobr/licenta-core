@@ -1,4 +1,4 @@
-package me.mircea.licenta.core.utils;
+package me.mircea.licenta.core.parser.utils;
 
 import java.util.Map;
 import java.util.Set;
@@ -13,9 +13,6 @@ public class TextContentAnalyzer {
 	public static final Map<String, String> formatsWordSet = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 	public static final Set<String> publisherWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 	public static final Set<String> descriptionWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-	
-	public static final String authorSeparatorsRegex = "[,&]\\s*";
-	
 	
 	static {
 		titleWordSet.add("titlu");
@@ -54,6 +51,4 @@ public class TextContentAnalyzer {
 	
 	private TextContentAnalyzer() {
 	}
-	
-	
 }

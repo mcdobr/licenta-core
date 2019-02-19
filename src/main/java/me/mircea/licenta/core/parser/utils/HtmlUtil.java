@@ -1,4 +1,4 @@
-package me.mircea.licenta.core.utils;
+package me.mircea.licenta.core.parser.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
+
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -47,7 +49,14 @@ public class HtmlUtil {
 	public static String getDomainOfUrl(String url) throws MalformedURLException {
 		return InternetDomainName.from(new URL(url).getHost()).topPrivateDomain().toString();
 	}
-
+	
+	public static Element extractMainContent(Document doc) {
+		sanitizeHtml(doc);
+		
+		//TODO: fix this selector (not applies only on last one)
+		return doc.select("[id='content'],[class*='continut'],[class*='page']:not(:has([id='content'],[class*='continut'],[class*='page']))").first();
+	}
+	
 	public static Document sanitizeHtml(Document doc) {
 		doc.select("nav,footer,script,noscript,style").remove();
 		doc.getElementsByAttribute("style").removeAttr("style");
@@ -59,10 +68,18 @@ public class HtmlUtil {
 		return doc;
 	}
 	
-	public static Element extractMainContent(Document doc) {
-		sanitizeHtml(doc);
+	public static Element removeUniqueHttpIdentifiers(Element doc) {
+		doc.getElementsByAttributeValueContaining("name", "csrf").remove();
+		return doc;
+	}
+	
+	public static Optional<String> getCanonicalUrl(Document doc) {
+		Element canonicalLink = doc.selectFirst("link[rel='canonical']");
 		
-		//TODO: fix this selector (not applies only on last one)
-		return doc.select("[id='content'],[class*='continut'],[class*='page']:not(:has([id='content'],[class*='continut'],[class*='page']))").first();
+		String result = null;
+		if (canonicalLink != null)
+			result = canonicalLink.absUrl("href");
+		
+		return Optional.ofNullable(result);
 	}
 }

@@ -7,6 +7,8 @@ import java.util.TreeSet;
 
 import org.junit.Test;
 
+import me.mircea.licenta.core.parser.utils.CssUtil;
+
 public class CssUtilTest {
 	@Test
 	public void shouldCreateSelectorFromWordlistRight() {
