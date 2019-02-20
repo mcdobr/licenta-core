@@ -5,46 +5,86 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.Conventions;
+import org.bson.codecs.pojo.PojoCodecProvider;
 
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.BulkWriteOptions;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
 
+import me.mircea.licenta.core.crawl.db.impl.PageTypeCodec;
+import me.mircea.licenta.core.crawl.db.model.Page;
+import me.mircea.licenta.core.crawl.db.model.PageType;
+
+import org.bson.codecs.pojo.*;
+
+
+import static org.bson.codecs.configuration.CodecRegistries.fromCodecs;
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.or;
+import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.set;
+import static com.mongodb.client.model.Updates.min;
+import static com.mongodb.client.model.Updates.max;
+
+
 public class CrawlDatabaseManager {
 	private final MongoClient mongoClient;
 	private final MongoDatabase crawlDatabase;
-	private final MongoCollection<Document> urls;
+	private final MongoCollection<Page> pagesCollection;
 	
 	private CrawlDatabaseManager() {
 		this.mongoClient = MongoClients.create();
-		this.crawlDatabase = this.mongoClient.getDatabase("crawldb");
-		this.urls = this.crawlDatabase.getCollection("urls");
+		final CodecRegistry pojoCodecRegistry = fromRegistries(
+				MongoClientSettings.getDefaultCodecRegistry(),
+				fromCodecs(new PageTypeCodec()),
+				fromProviders(
+						PojoCodecProvider.builder().automatic(true).build())
+				);
+		this.crawlDatabase = this.mongoClient.getDatabase("crawldb").withCodecRegistry(pojoCodecRegistry);
+		this.pagesCollection = this.crawlDatabase.getCollection("pages", Page.class);
 	}
-	
 	
 	public static final CrawlDatabaseManager instance = new CrawlDatabaseManager();
 	
+
 	/**
 	 * Upsert the document such that
 	 * - the url is the newest value (if there's a need to update to canonical url)
 	 * - discoveredTime is the minimum
 	 * - referer is the newest value 
 	 */
-	public void upsertManyUrls(Map<String, Document> urlDocs) {
+	public void upsertManyPages(List<Page> pages) {
 		UpdateOptions updateOptions = new UpdateOptions().upsert(true);
 		
-		List<WriteModel<Document>> updateModels = urlDocs.entrySet()
-			.stream()
-			.map(urlDocPair -> new UpdateOneModel<Document>(new Document("url", urlDocPair.getKey()),
-											urlDocPair.getValue(),
-											updateOptions))
+		// TODO: how do i bind this (maybe in pojo class)?
+		List<WriteModel<Page>> updateModels = pages.stream()
+			.map(page -> new UpdateOneModel<Page>(
+					or(
+							eq("_id", page.getObjectId()),
+							eq("url", page.getUrl())
+					),
+					combine(
+							set("url", page.getUrl()),
+							set("referer", page.getReferer()),
+							set("type", page.getType()),
+							set("title", page.getTitle()),
+							min("discoveredTime", page.getDiscoveredTime()),
+							max("retrievedTime", page.getRetrievedTime())
+					),
+					updateOptions))
 			.collect(Collectors.toList());
 		
-		urls.bulkWrite(updateModels, new BulkWriteOptions().ordered(false));
+		pagesCollection.bulkWrite(updateModels);
 	}
 }
