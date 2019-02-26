@@ -1,5 +1,6 @@
 package me.mircea.licenta.core.crawl;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -8,14 +9,15 @@ import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.conversions.Bson;
 
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.BulkWriteOptions;
-import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
@@ -24,14 +26,15 @@ import me.mircea.licenta.core.crawl.db.impl.PageTypeCodec;
 import me.mircea.licenta.core.crawl.db.model.Page;
 import me.mircea.licenta.core.crawl.db.model.PageType;
 
-import org.bson.codecs.pojo.*;
 
 
 import static org.bson.codecs.configuration.CodecRegistries.fromCodecs;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.or;
+import static com.mongodb.client.model.Filters.regex;
 import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
 import static com.mongodb.client.model.Updates.min;
@@ -53,6 +56,8 @@ public class CrawlDatabaseManager {
 				);
 		this.crawlDatabase = this.mongoClient.getDatabase("crawldb").withCodecRegistry(pojoCodecRegistry);
 		this.pagesCollection = this.crawlDatabase.getCollection("pages", Page.class);
+		
+		this.pagesCollection.createIndex(Indexes.ascending("url"));
 	}
 	
 	public static final CrawlDatabaseManager instance = new CrawlDatabaseManager();
@@ -86,5 +91,17 @@ public class CrawlDatabaseManager {
 			.collect(Collectors.toList());
 		
 		pagesCollection.bulkWrite(updateModels);
+	}
+	
+	public FindIterable<Page> getPossibleProductPages(String domain) {
+		Bson getProductPagesOfDomain = and(Arrays.asList(
+				regex("url", domain),
+				or(Arrays.asList(
+						eq("type", PageType.PRODUCT),
+						eq("type", PageType.UNKNOWN)
+				))
+		));
+		
+		return pagesCollection.find(getProductPagesOfDomain);
 	}
 }

@@ -11,7 +11,7 @@ import me.mircea.licenta.core.crawl.db.model.PageType;
 public class PageTypeCodec implements Codec<PageType>{
 	@Override
 	public PageType decode(BsonReader reader, DecoderContext decoderContext) {
-		return PageType.valueOf(reader.readString());
+		return PageType.valueOf(reader.readString().toUpperCase());
 	}
 	
 	@Override

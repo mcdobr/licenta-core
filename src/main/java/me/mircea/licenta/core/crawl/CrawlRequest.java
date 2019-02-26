@@ -2,16 +2,25 @@ package me.mircea.licenta.core.crawl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClients;
 
 import crawlercommons.robots.BaseRobotRules;
+import crawlercommons.robots.SimpleRobotRules;
 import crawlercommons.robots.SimpleRobotRulesParser;
 import me.mircea.licenta.core.parser.utils.HtmlUtil;
 
@@ -28,7 +37,7 @@ public class CrawlRequest {
 		this.startUrl = startUrl;
 		this.domain = HtmlUtil.getDomainOfUrl(startUrl);
 		this.properties = readPropertiesFile(propertiesInputStream);
-		this.robotRules = readRobotsFile(startUrl, properties);
+		this.robotRules = readRobotsFile(startUrl, properties).orElse(new SimpleRobotRules());
 	}
 	
 	private Map<String, String> readPropertiesFile(InputStream resourceLocation) throws IOException {
@@ -42,28 +51,31 @@ public class CrawlRequest {
 		return props;
 	}
 	
-	private BaseRobotRules readRobotsFile(final String startUrl, final Map<String, String> properties) throws IOException {
+	private Optional<BaseRobotRules> readRobotsFile(final String startUrl, final Map<String, String> properties) throws IOException {
 		BaseRobotRules rules;
 		final String robotsUrl = getRobotsFileUrl(startUrl);
 		
-		URLConnection connection = new URL(robotsUrl).openConnection();
-		//connection.setRequestProperty("User-Agent", properties.get("user_agent"));
-		
+		HttpURLConnection connection = (HttpURLConnection) new URL(robotsUrl).openConnection();
+		connection.setRequestProperty("User-Agent", properties.get("user_agent"));
 		SimpleRobotRulesParser ruleParser = new SimpleRobotRulesParser();
 		
-		byte[] content = IOUtils.toByteArray(connection);
-		rules = ruleParser.parseContent(robotsUrl, content, "text/plain", properties.get("bot_name"));
-		
-		if (rules.getCrawlDelay() == BaseRobotRules.UNSET_CRAWL_DELAY) {
-			rules.setCrawlDelay(Long.valueOf(properties.get("default_crawl_delay")));
+		if (connection.getResponseCode() != 200)
+			return Optional.empty();
+		else {
+			byte[] content = IOUtils.toByteArray(connection);
+			rules = ruleParser.parseContent(robotsUrl, content, "text/plain", properties.get("bot_name"));
+			
+			if (rules.getCrawlDelay() == BaseRobotRules.UNSET_CRAWL_DELAY) {
+				rules.setCrawlDelay(Long.valueOf(properties.get("default_crawl_delay")));
+			}
+			
+			return Optional.of(rules);
 		}
-		
-		return rules;
 	}
 	
 	private String getRobotsFileUrl(final String startUrl) throws MalformedURLException {
 		URL actualUrl = new URL(startUrl);
-		return "https://" + actualUrl.getAuthority() + "/robots.txt";
+		return actualUrl.getProtocol()+ "://" + actualUrl.getAuthority() + "/robots.txt";
 	}
 
 	public String getStartUrl() {
