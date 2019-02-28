@@ -73,12 +73,13 @@ public class HtmlUtil {
 		return doc;
 	}
 	
-	public static Optional<String> getCanonicalUrl(Document doc) {
+	public static Optional<String> getCanonicalUrl(Element doc) {
 		Element canonicalLink = doc.selectFirst("link[rel='canonical']");
 		
 		String result = null;
-		if (canonicalLink != null)
+		if (canonicalLink != null) {
 			result = canonicalLink.absUrl("href");
+		} // TODO: add option for meta tag with canonical link
 		
 		return Optional.ofNullable(result);
 	}

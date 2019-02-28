@@ -2,15 +2,13 @@ package me.mircea.licenta.core.crawl;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.codecs.pojo.Conventions;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
@@ -72,7 +70,6 @@ public class CrawlDatabaseManager {
 	public void upsertManyPages(List<Page> pages) {
 		UpdateOptions updateOptions = new UpdateOptions().upsert(true);
 		
-		// TODO: how do i bind this (maybe in pojo class)?
 		List<WriteModel<Page>> updateModels = pages.stream()
 			.map(page -> new UpdateOneModel<Page>(
 					or(
@@ -93,6 +90,25 @@ public class CrawlDatabaseManager {
 		pagesCollection.bulkWrite(updateModels);
 	}
 	
+	public void upsertOnePage(Page page) {
+		UpdateOptions updateOptions = new UpdateOptions().upsert(true);
+		pagesCollection.updateOne(or(
+					eq("_id", page.getObjectId()),
+					eq("url", page.getUrl())
+			),combine(
+					set("url", page.getUrl()),
+					set("referer", page.getReferer()),
+					set("type", page.getType()),
+					set("title", page.getTitle()),
+					min("discoveredTime", page.getDiscoveredTime()),
+					max("retrievedTime", page.getRetrievedTime())
+			),
+			updateOptions);
+	}
+	
+	/**
+	 * Get possible product pages ordered by retrievedTime ascending
+	 */
 	public FindIterable<Page> getPossibleProductPages(String domain) {
 		Bson getProductPagesOfDomain = and(Arrays.asList(
 				regex("url", domain),
@@ -102,6 +118,6 @@ public class CrawlDatabaseManager {
 				))
 		));
 		
-		return pagesCollection.find(getProductPagesOfDomain);
+		return pagesCollection.find(getProductPagesOfDomain).sort(new BasicDBObject("retrievedTime", 1));
 	}
 }

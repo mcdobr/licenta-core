@@ -6,6 +6,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class TextContentAnalyzer {
+	public static final String SEPARATORS = " ";
+	
+	
 	public static final Set<String> titleWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 	public static final Set<String> authorWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 	public static final Set<String> priceWordSet = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
@@ -36,6 +39,8 @@ public class TextContentAnalyzer {
 		formatsWordSet.put("pdf", "pdf");
 		formatsWordSet.put("epub", "epub");
 		formatsWordSet.put("mobi", "mobi");
+		formatsWordSet.put("audiobook", "audiobook");
+		formatsWordSet.put("audiobooks", "audiobook");
 	
 		formatsWordSet.put("cartonata", "hardcover");
 		formatsWordSet.put("necartonata", "paperback");
@@ -51,4 +56,13 @@ public class TextContentAnalyzer {
 	
 	private TextContentAnalyzer() {
 	}
+	
+	/*
+	public static Set<String> splitWords(String s)
+	{
+		for (int i = 0; i < s.length(); ++i) {
+			char c = s.charAt(i);
+			if (Character.isDigit(c) || Character.isAlp)
+		}
+	}*/
 }
