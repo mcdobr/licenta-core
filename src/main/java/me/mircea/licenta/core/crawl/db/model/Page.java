@@ -5,7 +5,7 @@ import java.time.Instant;
 import org.bson.types.ObjectId;
 
 public class Page {
-	private ObjectId objectId;
+	private ObjectId id;
 	private String url;
 	private String referer;
 	private PageType type;
@@ -25,16 +25,27 @@ public class Page {
 		this.type = type;
 	}
 	
+	public Page(final Page other) {
+		this.id = other.id;
+		this.url = other.url;
+		this.referer = other.referer;
+		this.type = other.type;
+		this.title = other.title;
+		this.discoveredTime = other.discoveredTime;
+		this.retrievedTime = other.retrievedTime;
+		
+	}
+	
 	public Page(final String url, final Instant discoveredTime, final String referer) {
 		this(url, discoveredTime, referer, PageType.UNKNOWN);
 	}
 	
-	public ObjectId getObjectId() {
-		return objectId;
+	public ObjectId getId() {
+		return id;
 	}
 	
-	public void setObjectId(ObjectId objectId) {
-		this.objectId = objectId;
+	public void setId(ObjectId id) {
+		this.id = id;
 	}
 	
 	public String getUrl() {
