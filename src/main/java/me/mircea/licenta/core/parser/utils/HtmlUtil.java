@@ -2,7 +2,9 @@ package me.mircea.licenta.core.parser.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -13,6 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 
 
+import org.apache.commons.io.IOUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
@@ -25,14 +28,12 @@ public class HtmlUtil {
 	public static final Set<String> htmlTags = new HashSet<>();
 	
 	private static final ClassLoader classLoader = HtmlUtil.class.getClassLoader();
-	
-	
+
 	static {
 		try {
-			final URL resource = classLoader.getResource("htmlTags.csv");
-			File inputFile = new File(resource.getFile());
-			
-			String text = new String(Files.readAllBytes(Paths.get(inputFile.toURI())), StandardCharsets.UTF_8);
+			InputStream is = classLoader.getResourceAsStream("htmlTags.csv");
+            String text = IOUtils.toString(is, StandardCharsets.UTF_8);
+
 			Arrays.asList(text.split(",")).stream().forEach(htmlTags::add);
 		} catch (IOException e) {
 			logger.error("Could not read file containing all html compliant tags: {}", e);

@@ -29,7 +29,7 @@ public class CrawlRequest {
 		this.startUrl = startUrl;
 		this.domain = HtmlUtil.getDomainOfUrl(startUrl);
 		this.properties = readPropertiesFile(propertiesInputStream);
-		this.robotRules = readRobotsFile(startUrl, properties).orElse(new SimpleRobotRules());
+		this.robotRules = readRobotsFile(startUrl, properties);
 	}
 	
 	private Map<String, String> readPropertiesFile(InputStream resourceLocation) throws IOException {
@@ -43,7 +43,10 @@ public class CrawlRequest {
 		return props;
 	}
 	
-	private Optional<BaseRobotRules> readRobotsFile(final String startUrl, final Map<String, String> properties) throws IOException {
+	/**
+	 * If no robots file found, then just set the crawl-delay to a conservative default
+	 */
+	private BaseRobotRules readRobotsFile(final String startUrl, final Map<String, String> properties) throws IOException {
 		BaseRobotRules rules;
 		final String robotsUrl = getRobotsFileUrl(startUrl);
 		
@@ -51,18 +54,19 @@ public class CrawlRequest {
 		connection.setRequestProperty("User-Agent", properties.get("user_agent"));
 		SimpleRobotRulesParser ruleParser = new SimpleRobotRulesParser();
 		
-		if (connection.getResponseCode() != 200)
-			return Optional.empty();
-		else {
+		if (connection.getResponseCode() != 200) {
+			rules = new SimpleRobotRules();
+		} else {
 			byte[] content = IOUtils.toByteArray(connection);
 			rules = ruleParser.parseContent(robotsUrl, content, "text/plain", properties.get("bot_name"));
-			
-			if (rules.getCrawlDelay() == BaseRobotRules.UNSET_CRAWL_DELAY) {
-				rules.setCrawlDelay(Long.valueOf(properties.get("default_crawl_delay")));
-			}
-			
-			return Optional.of(rules);
 		}
+
+		final long defaultCrawlDelay = Long.parseLong(properties.get("default_crawl_delay"));
+		if (rules.getCrawlDelay() == BaseRobotRules.UNSET_CRAWL_DELAY) {
+			rules.setCrawlDelay(defaultCrawlDelay);
+		}
+		
+		return rules;
 	}
 	
 	private String getRobotsFileUrl(final String startUrl) throws MalformedURLException {

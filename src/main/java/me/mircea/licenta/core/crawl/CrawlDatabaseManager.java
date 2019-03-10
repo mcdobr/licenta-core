@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
@@ -25,7 +24,6 @@ import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
-import com.mongodb.client.result.UpdateResult;
 
 import me.mircea.licenta.core.crawl.db.impl.PageTypeCodec;
 import me.mircea.licenta.core.crawl.db.model.Page;
@@ -64,7 +62,6 @@ public class CrawlDatabaseManager {
 		}
 		
 		this.mongoClient = MongoClients.create(secret.getProperty("connectionString"));
-		//this.mongoClient = MongoClients.create();
 		
 		final CodecRegistry pojoCodecRegistry = fromRegistries(
 				MongoClientSettings.getDefaultCodecRegistry(),
@@ -115,7 +112,7 @@ public class CrawlDatabaseManager {
 		UpdateOptions updateOptions = new UpdateOptions().upsert(true);
 		
 		try {
-		UpdateResult result = pagesCollection.updateOne(
+		pagesCollection.updateOne(
 				or( eq("_id", page.getId()),
 					eq("url", page.getUrl()))
 			,combine(
@@ -128,10 +125,8 @@ public class CrawlDatabaseManager {
 			),
 			updateOptions);
 		
-			// logger.error("{}", result.getModifiedCount());
-		
 		} catch (Exception e) {
-			logger.error("{}", e);
+			logger.error("Encountered {}", e);
 		}
 		
 	}
