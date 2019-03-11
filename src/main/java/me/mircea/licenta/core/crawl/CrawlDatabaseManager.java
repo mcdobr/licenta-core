@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import me.mircea.licenta.core.crawl.db.model.Job;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
@@ -51,7 +52,7 @@ public class CrawlDatabaseManager {
 	
 	private CrawlDatabaseManager() {
 		final String secretFile = "secret.properties";
-		final InputStream secretInputStream = CrawlRequest.class.getResourceAsStream("/" + secretFile);
+		final InputStream secretInputStream = Job.class.getResourceAsStream("/" + secretFile);
 		
 		Properties secret = new Properties();
 		try {

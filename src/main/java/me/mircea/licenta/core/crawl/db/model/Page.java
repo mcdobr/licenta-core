@@ -33,7 +33,6 @@ public class Page {
 		this.title = other.title;
 		this.discoveredTime = other.discoveredTime;
 		this.retrievedTime = other.retrievedTime;
-		
 	}
 	
 	public Page(final String url, final Instant discoveredTime, final String referer) {
