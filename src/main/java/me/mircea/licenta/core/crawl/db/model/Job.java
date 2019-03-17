@@ -1,5 +1,8 @@
 package me.mircea.licenta.core.crawl.db.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import crawlercommons.robots.BaseRobotRules;
 import crawlercommons.robots.SimpleRobotRules;
 import crawlercommons.robots.SimpleRobotRulesParser;
@@ -39,6 +42,7 @@ public class Job {
         }
     }
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private ObjectId id;
     private String seed;
     private String domain;
@@ -48,7 +52,12 @@ public class Job {
     private Instant end;
     private BaseRobotRules robotRules;
 
+    public Job() {
+        this.id = new ObjectId();
+    }
+
     public Job(String seed, JobType type) throws IOException {
+        this.id = new ObjectId();
         this.seed = seed;
         this.domain = HtmlUtil.getDomainOfUrl(seed);
         this.type = type;

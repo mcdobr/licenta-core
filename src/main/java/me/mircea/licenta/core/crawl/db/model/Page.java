@@ -12,13 +12,15 @@ public class Page {
 	private String title;
 	private Instant discoveredTime;
 	private Instant retrievedTime;
-
+	private ObjectId lastJob;
 
 	public Page() {
-		type = PageType.UNKNOWN;
+		this.id = new ObjectId();
+		this.type = PageType.UNKNOWN;
 	}
 	
 	public Page(final String url, final Instant discoveredTime, final String referer, final PageType type) {
+		this.id = new ObjectId();
 		this.url = url;
 		this.discoveredTime = discoveredTime;
 		this.referer = referer;
@@ -93,5 +95,13 @@ public class Page {
 
 	public void setRetrievedTime(Instant retrievedTime) {
 		this.retrievedTime = retrievedTime;
+	}
+
+	public ObjectId getLastJob() {
+		return lastJob;
+	}
+
+	public void setLastJob(ObjectId lastJob) {
+		this.lastJob = lastJob;
 	}
 }
