@@ -1,27 +1,21 @@
 package me.mircea.licenta.core.parser.utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
-
+import com.google.common.net.InternetDomainName;
 import org.apache.commons.io.IOUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.net.InternetDomainName;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 public class HtmlUtil {
 	private static final Logger logger = LoggerFactory.getLogger(HtmlUtil.class);
@@ -64,7 +58,8 @@ public class HtmlUtil {
 		doc.getElementsByAttributeValueContaining("class", "carousel").remove();
 		doc.getElementsByAttributeValueContaining("class", "promo").remove();
 		doc.getElementsByAttributeValueContaining("class", "header").remove();
-		doc.getElementsByAttributeValueContaining("class", "nav").remove();
+		doc.getElementsByAttributeValueContaining("class", "banner").remove();
+		// doc.getElementsByAttributeValue("class", "nav").remove();
 		
 		return doc;
 	}

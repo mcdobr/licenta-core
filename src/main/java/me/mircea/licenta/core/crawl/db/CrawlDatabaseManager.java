@@ -1,16 +1,16 @@
 package me.mircea.licenta.core.crawl.db;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Collectors;
-
-import com.mongodb.bulk.BulkWriteResult;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.*;
+import com.mongodb.client.model.Indexes;
+import com.mongodb.client.model.UpdateOneModel;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.UpdateResult;
 import me.mircea.licenta.core.crawl.db.impl.JobStatusCodec;
 import me.mircea.licenta.core.crawl.db.impl.JobTypeCodec;
+import me.mircea.licenta.core.crawl.db.impl.PageTypeCodec;
 import me.mircea.licenta.core.crawl.db.model.*;
 import org.bson.BsonValue;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -20,36 +20,20 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClientSettings;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Indexes;
-import com.mongodb.client.model.UpdateOneModel;
-import com.mongodb.client.model.UpdateOptions;
-import com.mongodb.client.model.WriteModel;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
 
-import me.mircea.licenta.core.crawl.db.impl.PageTypeCodec;
-
-import javax.annotation.Nullable;
-
-import static org.bson.codecs.configuration.CodecRegistries.fromCodecs;
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.or;
-import static com.mongodb.client.model.Filters.regex;
-import static com.mongodb.client.model.Updates.combine;
-import static com.mongodb.client.model.Updates.set;
-import static com.mongodb.client.model.Updates.min;
-import static com.mongodb.client.model.Updates.max;
+import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Updates.*;
+import static org.bson.codecs.configuration.CodecRegistries.*;
 
 
 public class CrawlDatabaseManager {
+	public static final CrawlDatabaseManager instance = new CrawlDatabaseManager();
 	private static final Logger logger = LoggerFactory.getLogger(CrawlDatabaseManager.class);
 	
 	private final MongoClient mongoClient;
@@ -68,7 +52,6 @@ public class CrawlDatabaseManager {
 			logger.error("Could not find the credentials file for connecting to crawl database {}. EXITING", e);
 			System.exit(-1);
 		}
-		
 		this.mongoClient = MongoClients.create(secret.getProperty("connectionString"));
 		
 		final CodecRegistry pojoCodecRegistry = fromRegistries(
@@ -88,8 +71,6 @@ public class CrawlDatabaseManager {
 		this.jobsCollection = this.crawlDatabase.getCollection("jobs", Job.class);
 		this.jobsCollection.createIndex(Indexes.ascending("status"));
 	}
-	
-	public static final CrawlDatabaseManager instance = new CrawlDatabaseManager();
 	
 
 	/**
@@ -119,8 +100,7 @@ public class CrawlDatabaseManager {
 					updateOptions))
 			.collect(Collectors.toList());
 
-
-		BulkWriteResult bulkWriteResult = pagesCollection.bulkWrite(updateModels);
+		pagesCollection.bulkWrite(updateModels);
 	}
 	
 	public void upsertOnePage(Page page) {
@@ -190,9 +170,7 @@ public class CrawlDatabaseManager {
 	}
 
 	public Iterable<Job> getActiveJobsByType(JobType jobType) {
-		Iterable<Job> iterable = jobsCollection.find(and(eq("type", jobType),
+		return jobsCollection.find(and(eq("type", jobType),
 										eq("status", JobStatus.ACTIVE)));
-
-		return iterable;
 	}
 }

@@ -1,6 +1,5 @@
 package me.mircea.licenta.core.crawl.db.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import crawlercommons.robots.BaseRobotRules;
@@ -29,11 +28,11 @@ public class Job {
     static {
         try {
             final String BOT_DEFAULT_PROPS_FILE = "botDefault.properties";
-            final InputStream BOT_DEFAULT_PROPS_INPUT_STREAM = Job.class.getResourceAsStream("/" + BOT_DEFAULT_PROPS_FILE);
+            final InputStream botDefaultPropsInputStream = Job.class.getResourceAsStream("/" + BOT_DEFAULT_PROPS_FILE);
 
             properties = new HashMap<>();
             Properties persistedProps = new Properties();
-            persistedProps.load(BOT_DEFAULT_PROPS_INPUT_STREAM);
+            persistedProps.load(botDefaultPropsInputStream);
             persistedProps.forEach((key, value) ->
                     properties.put(key.toString(), value.toString()));
         } catch (IOException e) {
@@ -55,6 +54,12 @@ public class Job {
     public Job() {
         this.id = new ObjectId();
     }
+
+    public Job(ObjectId continueJob, String seed, JobType type) throws IOException {
+        this(seed, type);
+        this.id = continueJob;
+    }
+
 
     public Job(String seed, JobType type) throws IOException {
         this.id = new ObjectId();
