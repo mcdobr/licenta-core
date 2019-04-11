@@ -11,6 +11,7 @@ import com.mongodb.client.result.UpdateResult;
 import me.mircea.licenta.core.crawl.db.impl.JobStatusCodec;
 import me.mircea.licenta.core.crawl.db.impl.JobTypeCodec;
 import me.mircea.licenta.core.crawl.db.impl.PageTypeCodec;
+import me.mircea.licenta.core.crawl.db.impl.SelectorTypeCodec;
 import me.mircea.licenta.core.crawl.db.model.*;
 import org.bson.BsonValue;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -40,6 +41,7 @@ public class CrawlDatabaseManager {
 	private final MongoDatabase crawlDatabase;
 	private final MongoCollection<Page> pagesCollection;
 	private final MongoCollection<Job> jobsCollection;
+	private final MongoCollection<Wrapper> wrappersCollection;
 
 	private CrawlDatabaseManager() {
 		final String secretFile = "secret.properties";
@@ -58,7 +60,8 @@ public class CrawlDatabaseManager {
 				MongoClientSettings.getDefaultCodecRegistry(),
 				fromCodecs(new PageTypeCodec(),
 						new JobTypeCodec(),
-						new JobStatusCodec()),
+						new JobStatusCodec(),
+						new SelectorTypeCodec()),
 				fromProviders(
 						PojoCodecProvider.builder().automatic(true).build())
 				);
@@ -70,6 +73,9 @@ public class CrawlDatabaseManager {
 
 		this.jobsCollection = this.crawlDatabase.getCollection("jobs", Job.class);
 		this.jobsCollection.createIndex(Indexes.ascending("status"));
+
+		this.wrappersCollection = this.crawlDatabase.getCollection("wrappers", Wrapper.class);
+		this.wrappersCollection.createIndex(Indexes.ascending("domain"));
 	}
 	
 
