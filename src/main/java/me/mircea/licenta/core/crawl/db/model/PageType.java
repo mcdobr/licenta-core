@@ -4,10 +4,12 @@ public enum PageType {
 	PRODUCT("product"),
 	SHELF("shelf"),
 	JUNK("junk"),
-	UNKNOWN("unknown");
+	UNAVAILABLE("unavailable"),
+	UNKNOWN("unknown"),
+	UNREACHABLE("unreachable");
 	
 	String type;
 	PageType(String type) {
-		this.type = type;
+		this.type = type.trim().toLowerCase();
 	}
 }

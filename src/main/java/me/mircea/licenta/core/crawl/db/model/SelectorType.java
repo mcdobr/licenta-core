@@ -4,10 +4,11 @@ public enum SelectorType {
     TEXT("text"),
     LINK("link"),
     IMAGE("image"),
+    ATTRIBUTE("attribute"),
     ELEMENT("element");
 
     String type;
     SelectorType(String type) {
-        this.type = type;
+        this.type = type.trim().toLowerCase();
     }
 }

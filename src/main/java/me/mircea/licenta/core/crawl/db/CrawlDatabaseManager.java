@@ -1,12 +1,11 @@
 package me.mircea.licenta.core.crawl.db;
 
+import com.google.common.base.Preconditions;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoWriteException;
 import com.mongodb.client.*;
-import com.mongodb.client.model.Indexes;
-import com.mongodb.client.model.UpdateOneModel;
-import com.mongodb.client.model.UpdateOptions;
-import com.mongodb.client.model.WriteModel;
+import com.mongodb.client.model.*;
 import com.mongodb.client.result.UpdateResult;
 import me.mircea.licenta.core.crawl.db.impl.JobStatusCodec;
 import me.mircea.licenta.core.crawl.db.impl.JobTypeCodec;
@@ -25,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -35,7 +35,7 @@ import static org.bson.codecs.configuration.CodecRegistries.*;
 
 public class CrawlDatabaseManager {
 	public static final CrawlDatabaseManager instance = new CrawlDatabaseManager();
-	private static final Logger logger = LoggerFactory.getLogger(CrawlDatabaseManager.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CrawlDatabaseManager.class);
 	
 	private final MongoClient mongoClient;
 	private final MongoDatabase crawlDatabase;
@@ -51,7 +51,7 @@ public class CrawlDatabaseManager {
 		try {
 			secret.load(secretInputStream);
 		} catch (IOException e) {
-			logger.error("Could not find the credentials file for connecting to crawl database {}. EXITING", e);
+			LOGGER.error("Could not find the credentials file for connecting to crawl database {}. EXITING", e);
 			System.exit(-1);
 		}
 		this.mongoClient = MongoClients.create(secret.getProperty("connectionString"));
@@ -68,7 +68,7 @@ public class CrawlDatabaseManager {
 		this.crawlDatabase = this.mongoClient.getDatabase("crawldb").withCodecRegistry(pojoCodecRegistry);
 
 		this.pagesCollection = this.crawlDatabase.getCollection("pages", Page.class);
-		this.pagesCollection.createIndex(Indexes.ascending("url"));
+		this.pagesCollection.createIndex(Indexes.ascending("url"), new IndexOptions().unique(true));
 		this.pagesCollection.createIndex(Indexes.ascending("retrievedTime"));
 
 		this.jobsCollection = this.crawlDatabase.getCollection("jobs", Job.class);
@@ -113,22 +113,27 @@ public class CrawlDatabaseManager {
 		UpdateOptions updateOptions = new UpdateOptions().upsert(true);
 		
 		try {
-		pagesCollection.updateOne(
-				or( eq("_id", page.getId()),
-					eq("url", page.getUrl()))
-			,combine(
-					set("url", page.getUrl()),
-					set("referer", page.getReferer()),
-					set("type", page.getType()),
-					set("title", page.getTitle()),
-					min("discoveredTime", page.getDiscoveredTime()),
-					max("retrievedTime", page.getRetrievedTime()),
-					set("lastJob", page.getLastJob())
-			),
-			updateOptions);
+			pagesCollection.updateOne(
+					or( eq("_id", page.getId()),
+						eq("url", page.getUrl()))
+				,combine(
+						set("url", page.getUrl()),
+						set("referer", page.getReferer()),
+						set("type", page.getType()),
+						set("title", page.getTitle()),
+						min("discoveredTime", page.getDiscoveredTime()),
+						max("retrievedTime", page.getRetrievedTime()),
+						set("lastJob", page.getLastJob())
+				),
+				updateOptions);
 		
+		} catch (MongoWriteException e ) {
+			if (e.getError().getCode() == 11000) {
+				pagesCollection.deleteOne(eq("_id", page.getId()));
+				LOGGER.info("Removed duplicate url from crawl database {}", page.getUrl());
+			}
 		} catch (Exception e) {
-			logger.error("Encountered {}", e);
+			LOGGER.error("Encountered a MongoDB error: {}", e);
 		}
 		
 	}
@@ -178,5 +183,12 @@ public class CrawlDatabaseManager {
 	public Iterable<Job> getActiveJobsByType(JobType jobType) {
 		return jobsCollection.find(and(eq("type", jobType),
 										eq("status", JobStatus.ACTIVE)));
+	}
+
+
+	public Optional<Wrapper> getWrapperForDomain(String domain) {
+		Preconditions.checkNotNull(domain);
+		Wrapper queryResult = wrappersCollection.find(eq("domain", domain)).first();
+		return Optional.ofNullable(queryResult);
 	}
 }

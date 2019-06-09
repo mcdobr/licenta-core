@@ -1,9 +1,11 @@
 package me.mircea.licenta.core.crawl.db.model;
 
+import com.google.common.base.Preconditions;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Wrapper {
     private ObjectId id;
@@ -12,6 +14,20 @@ public class Wrapper {
 
     public Wrapper() {
         this.selectors = new ArrayList<>();
+    }
+
+    public Optional<Selector> getSelectorByName(String name) {
+        Preconditions.checkNotNull(name);
+
+        Selector searched = null;
+        for (Selector s : this.selectors) {
+            if (s.getName().equals(name)) {
+                searched = s;
+                break;
+            }
+        }
+
+        return Optional.ofNullable(searched);
     }
 
     public ObjectId getId() {

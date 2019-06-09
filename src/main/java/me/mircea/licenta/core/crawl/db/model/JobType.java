@@ -6,6 +6,6 @@ public enum JobType {
 
     String type;
     JobType(String type) {
-        this.type = type;
+        this.type = type.trim().toLowerCase();
     }
 }

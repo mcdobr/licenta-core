@@ -35,10 +35,7 @@ public class HtmlUtil {
 	}
 	
 	private HtmlUtil() {
-	}
 
-	public static String extractFirstLinkOfElement(Element htmlElement) {
-		return htmlElement.select("a[href]").first().absUrl("href");
 	}
 
 	public static String getDomainOfUrl(String url) throws MalformedURLException {
@@ -59,13 +56,9 @@ public class HtmlUtil {
 		doc.getElementsByAttributeValueContaining("class", "promo").remove();
 		doc.getElementsByAttributeValueContaining("class", "header").remove();
 		doc.getElementsByAttributeValueContaining("class", "banner").remove();
+		//TODO: re-add this?
 		// doc.getElementsByAttributeValue("class", "nav").remove();
 		
-		return doc;
-	}
-	
-	public static Element removeUniqueHttpIdentifiers(Element doc) {
-		doc.getElementsByAttributeValueContaining("name", "csrf").remove();
 		return doc;
 	}
 	

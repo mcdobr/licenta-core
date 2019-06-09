@@ -45,9 +45,7 @@ public class EntityNormalizer {
 
 		// Remove stopwords
 		for (String stopword : stopwords) {
-			if (keywords.contains(stopword)) {
-				keywords.remove(stopword);
-			}
+			keywords.remove(stopword);
 		}
 
 		return keywords;

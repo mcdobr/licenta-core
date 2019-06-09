@@ -17,9 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class Job {
     private static final Logger LOGGER = LoggerFactory.getLogger(Job.class);
