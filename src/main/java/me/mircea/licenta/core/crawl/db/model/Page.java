@@ -23,6 +23,10 @@ public class Page {
 		this(url, referer, type, Instant.now());
 	}
 
+	public Page(final String url, final String referer, final Instant discoveredTime) {
+		this(url, referer, PageType.UNKNOWN, discoveredTime);
+	}
+
 	public Page(final String url, final String referer, final PageType type, final Instant discoveredTime) {
 		this.id = new ObjectId();
 		this.url = url;
@@ -30,20 +34,7 @@ public class Page {
 		this.type = type;
 		this.discoveredTime = discoveredTime;
 	}
-	
-	public Page(final Page other) {
-		this.id = other.id;
-		this.url = other.url;
-		this.referer = other.referer;
-		this.type = other.type;
-		this.title = other.title;
-		this.discoveredTime = other.discoveredTime;
-		this.retrievedTime = other.retrievedTime;
-	}
-	
-	public Page(final String url, final Instant discoveredTime, final String referer) {
-		this(url, referer, PageType.UNKNOWN, discoveredTime);
-	}
+
 	
 	public ObjectId getId() {
 		return id;

@@ -54,7 +54,7 @@ public class CrawlDatabaseManager {
 			LOGGER.error("Could not find the credentials file for connecting to crawl database {}. EXITING", e);
 			System.exit(-1);
 		}
-		this.mongoClient = MongoClients.create(secret.getProperty("connectionString"));
+		this.mongoClient = MongoClients.create(secret.getProperty("crawl_db_connection_string"));
 		
 		final CodecRegistry pojoCodecRegistry = fromRegistries(
 				MongoClientSettings.getDefaultCodecRegistry(),
