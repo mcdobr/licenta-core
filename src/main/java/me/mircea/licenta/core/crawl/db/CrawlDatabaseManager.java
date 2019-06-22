@@ -7,6 +7,7 @@ import com.mongodb.MongoWriteException;
 import com.mongodb.client.*;
 import com.mongodb.client.model.*;
 import com.mongodb.client.result.UpdateResult;
+import me.mircea.licenta.core.SecretManager;
 import me.mircea.licenta.core.crawl.db.impl.JobStatusCodec;
 import me.mircea.licenta.core.crawl.db.impl.JobTypeCodec;
 import me.mircea.licenta.core.crawl.db.impl.PageTypeCodec;
@@ -42,19 +43,10 @@ public class CrawlDatabaseManager {
 	private final MongoCollection<Page> pagesCollection;
 	private final MongoCollection<Job> jobsCollection;
 	private final MongoCollection<Wrapper> wrappersCollection;
+	private final MongoCollection<Site> siteCollection;
 
 	private CrawlDatabaseManager() {
-		final String secretFile = "secret.properties";
-		final InputStream secretInputStream = Job.class.getResourceAsStream("/" + secretFile);
-		
-		Properties secret = new Properties();
-		try {
-			secret.load(secretInputStream);
-		} catch (IOException e) {
-			LOGGER.error("Could not find the credentials file for connecting to crawl database {}. EXITING", e);
-			System.exit(-1);
-		}
-		this.mongoClient = MongoClients.create(secret.getProperty("crawl_db_connection_string"));
+		this.mongoClient = MongoClients.create(SecretManager.instance.getCrawlDbEndpoint());
 		
 		final CodecRegistry pojoCodecRegistry = fromRegistries(
 				MongoClientSettings.getDefaultCodecRegistry(),
@@ -76,6 +68,9 @@ public class CrawlDatabaseManager {
 
 		this.wrappersCollection = this.crawlDatabase.getCollection("wrappers", Wrapper.class);
 		this.wrappersCollection.createIndex(Indexes.ascending("domain"));
+
+		this.siteCollection = this.crawlDatabase.getCollection("sites", Site.class);
+		this.siteCollection.createIndex(Indexes.ascending("domain"));
 	}
 	
 
@@ -190,5 +185,16 @@ public class CrawlDatabaseManager {
 		Preconditions.checkNotNull(domain);
 		Wrapper queryResult = wrappersCollection.find(eq("domain", domain)).first();
 		return Optional.ofNullable(queryResult);
+	}
+
+	public Iterable<Site> getAllSites() {
+		return siteCollection.find();
+	}
+
+	public boolean isRunningJobOn(Site site) {
+		Iterable<Job> activeJobsOnSite = jobsCollection.find(and(eq("status", JobStatus.ACTIVE),
+				eq("domain", site.getDomain())));
+
+		return ((FindIterable<Job>) activeJobsOnSite).first() != null;
 	}
 }
