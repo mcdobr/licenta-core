@@ -9,9 +9,7 @@ public class Selector {
     private String target;
     private boolean multiple;
 
-    public Selector() {
-
-    }
+    public Selector() {}
 
     public String selectFirstFromElement(Element htmlElement) {
         String result = null;

@@ -8,6 +8,7 @@ import java.util.List;
 public class Site {
     private ObjectId id;
     private String domain;
+    private String homepage;
     private List<String> seeds;
 
     public Site() {
@@ -22,6 +23,10 @@ public class Site {
         return domain;
     }
 
+    public String getHomepage() {
+        return homepage;
+    }
+
     public List<String> getSeeds() {
         return seeds;
     }
@@ -32,6 +37,10 @@ public class Site {
 
     public void setDomain(String domain) {
         this.domain = domain;
+    }
+
+    public void setHomepage(String homepage) {
+        this.homepage = homepage;
     }
 
     public void setSeeds(List<String> seeds) {
