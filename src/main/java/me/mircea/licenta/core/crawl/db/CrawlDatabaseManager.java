@@ -35,12 +35,25 @@ public class CrawlDatabaseManager {
     public static final CrawlDatabaseManager instance = new CrawlDatabaseManager();
     private static final Logger LOGGER = LoggerFactory.getLogger(CrawlDatabaseManager.class);
 
+    private static final String CRAWLER_DATABASE_NAME = "crawldb";
+    private static final String PAGES_COLLECTION_NAME = "pages";
+    private static final String JOBS_COLLECTION_NAME = "jobs";
+    private static final String WRAPPERS_COLLECTION_NAME = "wrappers";
+    private static final String SITES_COLLECTION_NAME = "sites";
+    private static final String SESSION_COLLECTION_NAME = "sessions";
+
+    private static final String URL_PROPERTY = "url";
+    private static final String RETRIEVED_TIME_PROPERTY = "retrievedTime";
+    private static final String STATUS_PROPERTY = "status";
+    private static final String DOMAIN_PROPERTY = "domain";
+
     private final MongoClient mongoClient;
     private final MongoDatabase crawlDatabase;
     private final MongoCollection<Page> pagesCollection;
     private final MongoCollection<Job> jobsCollection;
     private final MongoCollection<Wrapper> wrappersCollection;
-    private final MongoCollection<Site> siteCollection;
+    private final MongoCollection<Site> sitesCollection;
+    private final MongoCollection<Session> sessionsCollection;
 
     private CrawlDatabaseManager() {
         this.mongoClient = MongoClients.create(SecretManager.instance.getCrawlDbEndpoint());
@@ -54,20 +67,22 @@ public class CrawlDatabaseManager {
                 fromProviders(
                         PojoCodecProvider.builder().automatic(true).build())
         );
-        this.crawlDatabase = this.mongoClient.getDatabase("crawldb").withCodecRegistry(pojoCodecRegistry);
+        this.crawlDatabase = this.mongoClient.getDatabase(CRAWLER_DATABASE_NAME).withCodecRegistry(pojoCodecRegistry);
 
-        this.pagesCollection = this.crawlDatabase.getCollection("pages", Page.class);
-        this.pagesCollection.createIndex(Indexes.ascending("url"), new IndexOptions().unique(true));
-        this.pagesCollection.createIndex(Indexes.ascending("retrievedTime"));
+        this.pagesCollection = this.crawlDatabase.getCollection(PAGES_COLLECTION_NAME, Page.class);
+        this.pagesCollection.createIndex(Indexes.ascending(URL_PROPERTY), new IndexOptions().unique(true));
+        this.pagesCollection.createIndex(Indexes.ascending(RETRIEVED_TIME_PROPERTY));
 
-        this.jobsCollection = this.crawlDatabase.getCollection("jobs", Job.class);
-        this.jobsCollection.createIndex(Indexes.ascending("status"));
+        this.jobsCollection = this.crawlDatabase.getCollection(JOBS_COLLECTION_NAME, Job.class);
+        this.jobsCollection.createIndex(Indexes.ascending(STATUS_PROPERTY));
 
-        this.wrappersCollection = this.crawlDatabase.getCollection("wrappers", Wrapper.class);
-        this.wrappersCollection.createIndex(Indexes.ascending("domain"));
+        this.wrappersCollection = this.crawlDatabase.getCollection(WRAPPERS_COLLECTION_NAME, Wrapper.class);
+        this.wrappersCollection.createIndex(Indexes.ascending(DOMAIN_PROPERTY));
 
-        this.siteCollection = this.crawlDatabase.getCollection("sites", Site.class);
-        this.siteCollection.createIndex(Indexes.ascending("domain"));
+        this.sitesCollection = this.crawlDatabase.getCollection(SITES_COLLECTION_NAME, Site.class);
+        this.sitesCollection.createIndex(Indexes.ascending(DOMAIN_PROPERTY));
+
+        this.sessionsCollection = this.crawlDatabase.getCollection(SESSION_COLLECTION_NAME, Session.class);
     }
 
 
@@ -176,7 +191,6 @@ public class CrawlDatabaseManager {
                 eq("status", JobStatus.ACTIVE)));
     }
 
-
     public Optional<Wrapper> getWrapperForDomain(String domain) {
         Preconditions.checkNotNull(domain);
         Wrapper queryResult = wrappersCollection.find(eq("domain", domain)).first();
@@ -184,7 +198,7 @@ public class CrawlDatabaseManager {
     }
 
     public Iterable<Site> getAllSites() {
-        return siteCollection.find();
+        return sitesCollection.find();
     }
 
     public boolean isThereAnyJobRunningOnDomain(Site site) {
@@ -192,14 +206,19 @@ public class CrawlDatabaseManager {
     }
 
     public boolean isThereAnyJobRunningOnDomain(String domain) {
-        FindIterable<Job> activeJobsOnSite = jobsCollection.find(and(eq("status", JobStatus.ACTIVE),
-                eq("domain", domain)));
+        FindIterable<Job> activeJobsOnSite = jobsCollection.find(and(eq(STATUS_PROPERTY, JobStatus.ACTIVE),
+                eq(DOMAIN_PROPERTY, domain)));
 
         return activeJobsOnSite.first() != null;
     }
 
     public Job getActiveJobOnDomain(String domain) {
-        return jobsCollection.find(and(eq("status", JobStatus.ACTIVE), eq("domain", domain)))
+        return jobsCollection.find(and(eq(STATUS_PROPERTY, JobStatus.ACTIVE), eq(DOMAIN_PROPERTY, domain)))
                 .first();
+    }
+
+
+    public Session getSessionById(ObjectId id) {
+        return sessionsCollection.find(eq("_id", id)).first();
     }
 }
