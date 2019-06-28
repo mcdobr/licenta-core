@@ -16,7 +16,8 @@ public class Selector {
 
         Element element = htmlElement.selectFirst(this.getQuery());
         if (element != null) {
-            switch (getType()) {
+            SelectorType typeOfSelector = getType();
+            switch (typeOfSelector) {
                 case TEXT:
                     result = element.text();
                     break;
@@ -29,6 +30,8 @@ public class Selector {
                 case ATTRIBUTE:
                     result = element.attr(getTarget());
                     break;
+                default:
+                    throw new InvalidSelectorTypeException("Selector type is invalid:");
             }
         }
         return result;

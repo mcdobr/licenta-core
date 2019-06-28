@@ -1,6 +1,5 @@
 package me.mircea.licenta.core.crawl.db.impl;
 
-import me.mircea.licenta.core.crawl.db.model.Selector;
 import me.mircea.licenta.core.crawl.db.model.SelectorType;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
