@@ -1,6 +1,5 @@
 package me.mircea.licenta.core.crawl.db;
 
-import me.mircea.licenta.core.crawl.db.model.Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +19,7 @@ public final class RobotDefaults {
     static {
         try {
             final String BOT_DEFAULT_PROPS_FILE = "botDefault.properties";
-            final InputStream botDefaultPropsInputStream = Job.class.getResourceAsStream("/" + BOT_DEFAULT_PROPS_FILE);
+            final InputStream botDefaultPropsInputStream = RobotDefaults.class.getResourceAsStream("/" + BOT_DEFAULT_PROPS_FILE);
 
             defaultProperties = new HashMap<>();
             Properties persistedProps = new Properties();
