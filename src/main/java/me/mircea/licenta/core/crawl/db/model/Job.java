@@ -1,5 +1,6 @@
 package me.mircea.licenta.core.crawl.db.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import crawlercommons.robots.BaseRobotRules;
@@ -30,6 +31,8 @@ public class Job {
     private JobType type;
     private Instant start;
     private Instant end;
+
+    @JsonIgnore
     private BaseRobotRules robotRules;
 
     public Job() {
