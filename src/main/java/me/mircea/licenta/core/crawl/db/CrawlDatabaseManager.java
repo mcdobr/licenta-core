@@ -30,7 +30,9 @@ import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.*;
 import static org.bson.codecs.configuration.CodecRegistries.*;
 
-
+/**
+ * @author mircea
+ */
 public class CrawlDatabaseManager {
     public static final CrawlDatabaseManager instance = new CrawlDatabaseManager();
     private static final Logger LOGGER = LoggerFactory.getLogger(CrawlDatabaseManager.class);

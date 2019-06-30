@@ -10,10 +10,13 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
+ * @author mircea
  * Static utility class that reads robot properties.
  */
 public final class RobotDefaults {
     private static final Logger LOGGER = LoggerFactory.getLogger(RobotDefaults.class);
+    private static final String CONFIG_FILE_USER_AGENT_KEY = "user_agent";
+
     private static Map<String, String> defaultProperties;
 
     static {
@@ -32,6 +35,9 @@ public final class RobotDefaults {
         }
     }
 
+    private RobotDefaults() {
+    }
+
     public static Map<String, String> getDefaults() {
         return defaultProperties;
     }
@@ -40,6 +46,7 @@ public final class RobotDefaults {
         return defaultProperties.get(key);
     }
 
-    private RobotDefaults() {
+    public static String getUserAgent() {
+        return defaultProperties.get(CONFIG_FILE_USER_AGENT_KEY);
     }
 }

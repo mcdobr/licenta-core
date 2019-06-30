@@ -34,4 +34,13 @@ public class Session {
     public void setStartedJobs(Map<String, ObjectId> startedJobs) {
         this.startedJobs = ImmutableMap.copyOf(startedJobs);
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Session{");
+        sb.append("id=").append(id);
+        sb.append(", startedJobs=").append(startedJobs);
+        sb.append('}');
+        return sb.toString();
+    }
 }

@@ -46,4 +46,15 @@ public class Site {
     public void setSeeds(List<String> seeds) {
         this.seeds = seeds;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Site{");
+        sb.append("id=").append(id);
+        sb.append(", domain='").append(domain).append('\'');
+        sb.append(", homepage='").append(homepage).append('\'');
+        sb.append(", seeds=").append(seeds);
+        sb.append('}');
+        return sb.toString();
+    }
 }

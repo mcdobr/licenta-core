@@ -76,4 +76,16 @@ public class Selector {
     public void setMultiple(boolean multiple) {
         this.multiple = multiple;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Selector{");
+        sb.append("name='").append(name).append('\'');
+        sb.append(", type=").append(type);
+        sb.append(", query='").append(query).append('\'');
+        sb.append(", target='").append(target).append('\'');
+        sb.append(", multiple=").append(multiple);
+        sb.append('}');
+        return sb.toString();
+    }
 }

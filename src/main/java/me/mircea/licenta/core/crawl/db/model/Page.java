@@ -99,4 +99,19 @@ public class Page {
 	public void setLastJob(ObjectId lastJob) {
 		this.lastJob = lastJob;
 	}
+
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder("Page{");
+		sb.append("id=").append(id);
+		sb.append(", url='").append(url).append('\'');
+		sb.append(", referer='").append(referer).append('\'');
+		sb.append(", type=").append(type);
+		sb.append(", title='").append(title).append('\'');
+		sb.append(", discoveredTime=").append(discoveredTime);
+		sb.append(", retrievedTime=").append(retrievedTime);
+		sb.append(", lastJob=").append(lastJob);
+		sb.append('}');
+		return sb.toString();
+	}
 }

@@ -53,4 +53,14 @@ public class Wrapper {
     public void setSelectors(List<Selector> selectors) {
         this.selectors = selectors;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Wrapper{");
+        sb.append("id=").append(id);
+        sb.append(", domain='").append(domain).append('\'');
+        sb.append(", selectors=").append(selectors);
+        sb.append('}');
+        return sb.toString();
+    }
 }
