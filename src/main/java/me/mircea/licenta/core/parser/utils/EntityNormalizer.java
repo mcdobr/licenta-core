@@ -79,4 +79,33 @@ public class EntityNormalizer {
             sb.setLength(0);
         }
     }
+
+    public String getCorrectlyFormattedIsbnIfPossible(String a, String b) {
+        if (a == null && b == null) {
+            return null;
+        }
+
+        if (a == null || b == null) {
+            return (a != null) ? a : b;
+        }
+
+        final int ISBN13_LENGTH = 13;
+        final int ISBN10_LENGTH = 10;
+
+        if (a.length() == ISBN13_LENGTH) {
+            return a;
+        }
+        if (b.length() == ISBN13_LENGTH) {
+            return b;
+        }
+
+        if (a.length() == ISBN10_LENGTH) {
+            return a;
+        }
+        if (b.length() == ISBN10_LENGTH) {
+            return b;
+        }
+
+        return a;
+    }
 }
