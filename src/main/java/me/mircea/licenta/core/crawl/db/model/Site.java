@@ -10,9 +10,11 @@ public class Site {
     private String domain;
     private String homepage;
     private List<String> seeds;
+    private boolean disallowCookies;
 
     public Site() {
-        seeds = new ArrayList<>();
+        this.seeds = new ArrayList<>();
+        this.disallowCookies = false;
     }
 
     public ObjectId getId() {
@@ -47,13 +49,22 @@ public class Site {
         this.seeds = seeds;
     }
 
+    public boolean getDisallowCookies() {
+        return disallowCookies;
+    }
+
+    public void setDisallowCookies(boolean disallowCookies) {
+        this.disallowCookies = disallowCookies;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Site{");
         sb.append("id=").append(id);
         sb.append(", domain='").append(domain).append('\'');
         sb.append(", homepage='").append(homepage).append('\'');
-        sb.append(", seeds=").append(seeds);
+        sb.append(", seeds=").append(seeds).append('\'');
+        sb.append(", disallowCookies=").append(disallowCookies);
         sb.append('}');
         return sb.toString();
     }

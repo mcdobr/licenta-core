@@ -31,6 +31,7 @@ public class Job {
     private JobType type;
     private Instant start;
     private Instant end;
+    private boolean disallowCookies;
 
     @JsonIgnore
     private BaseRobotRules robotRules;
@@ -57,10 +58,14 @@ public class Job {
     }
 
     public Job(String homepage, JobType type, Collection<String> seeds) throws IOException {
-        this(homepage, type, seeds, Collections.emptyList());
+        this(homepage, type, seeds, Collections.emptyList(), false);
     }
 
     public Job(String homepage, JobType type, Collection<String> seeds, Iterable<String> sitemaps) throws IOException {
+        this(homepage, type, seeds, sitemaps, false);
+    }
+
+    public Job(String homepage, JobType type, Collection<String> seeds, Iterable<String> sitemaps, boolean disallowCookies) throws IOException {
         this.id = new ObjectId();
         this.domain = HtmlUtil.getDomainOfUrl(homepage);
         this.seeds = seeds;
@@ -76,7 +81,9 @@ public class Job {
             throw new JobActiveOnHost("Could not start job of type " + type +
                     "because a job is still active on host " + HtmlUtil.getDomainOfUrl(homepage));
         }
+        this.disallowCookies = disallowCookies;
     }
+
 
     /**
      * If no robots file found, then just set the crawl-delay to a conservative default
@@ -165,6 +172,14 @@ public class Job {
         this.end = end;
     }
 
+    public boolean isDisallowCookies() {
+        return disallowCookies;
+    }
+
+    public void setDisallowCookies(boolean disallowCookies) {
+        this.disallowCookies = disallowCookies;
+    }
+
     public BaseRobotRules getRobotRules() {
         return robotRules;
     }
@@ -183,6 +198,7 @@ public class Job {
         sb.append(", type=").append(type);
         sb.append(", start=").append(start);
         sb.append(", end=").append(end);
+        sb.append(", disallowCookies=").append(disallowCookies);
         sb.append(", robotRules=").append(robotRules);
         sb.append('}');
         return sb.toString();
