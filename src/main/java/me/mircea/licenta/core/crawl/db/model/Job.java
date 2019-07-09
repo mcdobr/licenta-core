@@ -76,12 +76,11 @@ public class Job {
         for (String sitemap : sitemaps) {
             this.robotRules.addSitemap(sitemap);
         }
-
+        this.disallowCookies = disallowCookies;
         if (CrawlDatabaseManager.instance.isThereAnyJobRunningOnDomain(this.domain)) {
             throw new JobActiveOnHost("Could not start job of type " + type +
                     "because a job is still active on host " + HtmlUtil.getDomainOfUrl(homepage));
         }
-        this.disallowCookies = disallowCookies;
     }
 
 
